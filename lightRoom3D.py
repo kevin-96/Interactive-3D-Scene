@@ -258,6 +258,10 @@ def draw_scene():
     amb = [ 0*brightness, 0*brightness, 0*brightness, 1.0 ]
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb)
 
+    place_light0()
+    place_light1()
+    place_light2()
+
     # Set up the main light (LIGHT0)... or not.
     if is_light_on:
         place_main_light()
@@ -476,9 +480,132 @@ def place_main_light():
    #glDisable(GL_LIGHTING)
     glColor3f(0, 0, brightness)
     glutSolidSphere(0.5, 20, 20)
-  #  glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHTING)
     glPopMatrix()
 
+def place_light0():
+    """Set up light 0."""
+    activeLight = GL_LIGHT0
+    glMatrixMode(GL_MODELVIEW)
+    lx = 0
+    ly = 10
+    lz = 0
+    lightColor = [0.2, 0.2, 1]
+    light_position = [ lx, ly, lz, 1.0 ]
+    light_ambient = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
+    light_diffuse = [ lightColor[0]*brightness, lightColor[1]*brightness, lightColor[2]*brightness, 1.0 ]
+    light_specular = [ lightColor[0]*brightness, lightColor[1]*brightness, lightColor[2]*brightness, 1.0 ]
+    light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
+
+    # For this light, set position, ambient, diffuse, and specular values
+    glLightfv(activeLight, GL_POSITION, light_position)
+    glLightfv(activeLight, GL_AMBIENT, light_ambient)
+    glLightfv(activeLight, GL_DIFFUSE, light_diffuse)
+    glLightfv(activeLight, GL_SPECULAR, light_specular)
+
+    # Constant attenuation (for distance, etc.)
+    # Only works for fixed light locations!  Otherwise disabled
+    glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
+    glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
+    glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
+
+    # Create a spotlight effect (none at the moment)
+    glLightf(activeLight, GL_SPOT_CUTOFF,40.0)
+    glLightf(activeLight, GL_SPOT_EXPONENT, 4.0)
+    glLightfv(activeLight, GL_SPOT_DIRECTION, light_direction)
+    
+    glEnable(activeLight)
+
+    # This part draws a SELF-COLORED sphere (in spot where light is!)
+    glPushMatrix()
+    glTranslatef(lx,ly,lz)
+    glDisable(GL_LIGHTING)
+    glColor3fv(lightColor)
+    glutSolidSphere(0.5, 20, 20)
+    glEnable(GL_LIGHTING)
+    glPopMatrix()
+
+def place_light1():
+    """Set up the light 1."""
+    activeLight = GL_LIGHT1
+    glMatrixMode(GL_MODELVIEW)
+    lx = 5
+    ly = 10
+    lz = 0
+    light_position = [ lx, ly, lz, 1.0 ]
+    light_ambient = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
+    light_diffuse = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
+    light_specular = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
+    light_direction = [ 3.0, -10.0, 0.0, 0.0 ]  # Light points down (and a little to the right)
+
+    # For this light, set position, ambient, diffuse, and specular values
+    glLightfv(activeLight, GL_POSITION, light_position)
+    glLightfv(activeLight, GL_AMBIENT, light_ambient)
+    glLightfv(activeLight, GL_DIFFUSE, light_diffuse)
+    glLightfv(activeLight, GL_SPECULAR, light_specular)
+
+    # Constant attenuation (for distance, etc.)
+    # Only works for fixed light locations!  Otherwise disabled
+    glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
+    glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
+    glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
+
+    # Create a spotlight effect (none at the moment)
+    glLightf(activeLight, GL_SPOT_CUTOFF,20.0)
+    glLightf(activeLight, GL_SPOT_EXPONENT, 4.0)
+    glLightfv(activeLight, GL_SPOT_DIRECTION, light_direction)
+    
+    glEnable(activeLight)
+
+    # This part draws a SELF-COLORED sphere (in spot where light is!)
+    glPushMatrix()
+    glTranslatef(lx,ly,lz)
+    glDisable(GL_LIGHTING)
+    glColor3f(brightness, brightness, brightness)
+    glutSolidSphere(0.5, 20, 20)
+    glEnable(GL_LIGHTING)
+    glPopMatrix()
+
+def place_light2():
+    """Set up the light 2."""
+    activeLight = GL_LIGHT2
+    glMatrixMode(GL_MODELVIEW)
+    lx = -5
+    ly = 10
+    lz = 0
+    light_position = [ lx, ly, lz, 1.0 ]
+    light_ambient = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
+    light_diffuse = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
+    light_specular = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
+    light_direction = [ -3.0, -10.0, 0.0, 0.0 ]  # Light points down
+
+    # For Light 0, set position, ambient, diffuse, and specular values
+    glLightfv(activeLight, GL_POSITION, light_position)
+    glLightfv(activeLight, GL_AMBIENT, light_ambient)
+    glLightfv(activeLight, GL_DIFFUSE, light_diffuse)
+    glLightfv(activeLight, GL_SPECULAR, light_specular)
+
+    # Constant attenuation (for distance, etc.)
+    # Only works for fixed light locations!  Otherwise disabled
+    glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
+    glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
+    glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
+
+    # Create a spotlight effect (none at the moment)
+    glLightf(activeLight, GL_SPOT_CUTOFF,20.0)
+    glLightf(activeLight, GL_SPOT_EXPONENT, 4.0)
+    glLightfv(activeLight, GL_SPOT_DIRECTION, light_direction)
+    
+    glEnable(activeLight)
+
+    # This part draws a SELF-COLORED sphere (in spot where light is!)
+    glPushMatrix()
+    glTranslatef(lx,ly,lz)
+    glDisable(GL_LIGHTING)
+    glColor3f(brightness, brightness, brightness)
+    glutSolidSphere(0.5, 20, 20)
+    glEnable(GL_LIGHTING)
+    glPopMatrix()
 def set_copper(face):
     """Set the material properties of the given face to "copper"-esque.
 
