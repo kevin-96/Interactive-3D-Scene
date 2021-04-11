@@ -4,10 +4,23 @@ TEAM MEMBERS:
 Phillip Nam, Kevin Sangurima, Ryan Clark
 
 HOW TO RUN THE PROGRAM:
-WILL DO LATER!
+
+1. Unzip the project file ("Interactive3DScene.zip")
+2. Using a terminal, navigate to the folder that was unzipped
+3. In that folder, run the following command "python3 lightRoom3D.py" (Make sure Python is installed on your machine! Program will not run if Python isn't installed.)
 
 HOW TO INTERACT WITH THE SCENE:
-WILL DO LATER!
+Camera Movement Controls:
+'w' = Move forward
+'s' = Move backward
+'a' = Move left (side to side)
+'d' = Move right (side to side)
+'q' = Look left
+'e' = Look right
+'z' = Look down
+'c' = Look up
+'x' = Look straight ahead (Set gaze level straight)
+'r' = Go back to starting position
 
-Extra features:
+EXTRA FEATURES:
 nope. not yet...

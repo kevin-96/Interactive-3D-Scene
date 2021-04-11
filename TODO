@@ -1,10 +1,14 @@
+KEY:
+'-' = Not Completed
+'X' = Completed
+
 Create Objects:
 - Floor (Textured with checkerboard pattern)
 - 4 Walls, 1 Ceiling (Colored/Textured)
 - Table (Top textured with wood pattern)
 - Desk Lamp
-- Copper BallDONE
-- Polished Silver Ball DONE
+- Copper Ball
+- Polished Silver Ball
 - Pair of Dice (with texture-mapped dots)
 - Textured picutre on the wall (when lights are off)
 
@@ -14,13 +18,13 @@ Create Light Sources:
 - Bright (white) spotlight/flashlight from the camera's view (30 degrees)
 
 Navigation (Functionality):
-- Look up/down (90 degrees)  DONE
-- Turn left/right (360 degrees) DONE
-- Move forward/backward    DONE
-- Move side to side DONE
+X Look up/down (90 degrees)
+X Turn left/right (360 degrees)
+X Move forward/backward
+X Move side to side
 - (SET KEYSTROKE): Button to set the camera back at a starting position
-- (SET KEYSTROKE): Button to level the camera's gaze (look DIRECTLY AHEAD, not up or down)
-- Camera CANNOT walk through walls (the bounds), restrict x and z position
+X (SET KEYSTROKE): Button to level the camera's gaze (look DIRECTLY AHEAD, not up or down)
+- Camera CANNOT walk through walls, set x and z boundaries
 
 Other functionality:
 - 'h': prints a help message in the console
@@ -29,3 +33,9 @@ Other functionality:
 - (SET KEYSTROKE): The Copper Ball rolls around (in a circle) on the table top. Pressing same button stops the movement (Animation)
 - (SET KEYSTROKE): The Polished Silver Ball rolls around (in a circle) on the table top. Pressing same button stops the movement (Animation)
 - (SET KEYSTROKE): The dice animate (roll or spin) for a few seconds and then stop
+
+README Documentation:
+X Team Members
+X How To Run Program
+- How To Interact With Scene
+- Extra Features
