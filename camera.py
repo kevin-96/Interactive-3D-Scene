@@ -71,8 +71,8 @@ class Camera:
         # glLoadIdentity();
 
         global lookX, lookY, lookZ
-
         startingPos = Point(0,0,0) # Starting Position (Origin)
+        
         gluLookAt(startingPos.x, startingPos.y, startingPos.z,  # Camera's starting position (from startingPos)
                   lookX, lookY, lookZ,                          # Camera's look at point (remains same)
                   0, 1, 0)                                      # Camera is always oriented vertically
