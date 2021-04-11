@@ -17,6 +17,7 @@
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GL import *
+#from PIL import Image
 import sys
 from utils import *
 from camera import *
@@ -82,12 +83,14 @@ def main():
 
 def init():
     """Perform basic OpenGL initialization."""
-    global tube, ball
+    global tube, ball,cube
     tube = gluNewQuadric()
     gluQuadricDrawStyle(tube, GLU_FILL)
     ball = gluNewQuadric()
     gluQuadricDrawStyle(ball, GLU_FILL)
-
+    cube = gluNewQuadric()
+    gluQuadricDrawStyle(cube, GLU_FILL)
+  
     # Set up lighting and depth-test
     glEnable(GL_LIGHTING)
     glEnable(GL_NORMALIZE)    # Inefficient...
@@ -166,6 +169,14 @@ def keyboard(key, x, y):
     elif key == b'a':
         # Go left
         camera.turn(2)
+        glutPostRedisplay()
+    elif key == b'A':
+        # Slide left
+        camera.slide(-1, 0, 0)
+        glutPostRedisplay()
+    elif key == b'D':
+        # Slide right
+        camera.slide(1, 0, 0)
         glutPostRedisplay()
     elif key == b'd':
         # Go right
@@ -259,17 +270,74 @@ def draw_scene():
 
 def draw_objects():
     glPushMatrix()
-    glTranslate(-1, 2, 10)   #0, 2, 30
+    glTranslate(5, 2, 10)   #0, 2, 30
     set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
     gluSphere(ball, 1.0, 30, 2)
    
     glPopMatrix()
 
     glPushMatrix()
-    glTranslate(5, 2, 10)   #0, 2, 30
+    glTranslate(10, 2, 10)   #0, 2, 30
     set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
     gluSphere(ball, 1.0, 30, 2)
     glPopMatrix()
+
+##Makes Table
+    glPushMatrix()
+    glTranslate(-5, 0, 10)   #0, 2, 30
+    glRotated(-90, 1, 0, 0)
+    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
+    gluCylinder(tube, .5, .5, 2,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(0, 0, 10)   #0, 2, 30
+    glRotated(-90, 1, 0, 0)
+    set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
+    gluCylinder(tube, .5, .5, 2,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(0, 0, 7)   #0, 2, 30
+    glRotated(-90, 1, 0, 0)
+    set_pewter(GL_FRONT_AND_BACK)    # Make material attributes mimic pewter
+    gluCylinder(tube, .5, .5, 2,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(-5, 0, 7)   #0, 2, 30
+    glRotated(-90, 1, 0, 0)
+    set_pewter(GL_FRONT_AND_BACK)    # Make material attributes mimic pewter
+    gluCylinder(tube, .5, .5, 2,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslated(-2.5,2.4, 7)
+    glScaled(4.1, 0.5, 0.55) # Stretch body
+    glRotated(45, 0, 0, 1) # Drawing body parallel to x-axis
+    gluCylinder(cube, 1, 1, 6, 4, 1) # Body (Bottom)
+    glPopMatrix()
+
+    #Walls 
+    glPushMatrix()
+    set_copper(GL_FRONT_AND_BACK)
+    glTranslated(-2.5,0, 3)
+    glScaled(10, 0.5, 0.55) # Stretch body
+    glRotated(-90, 1, 0,0) # Drawing body parallel to x-axis
+    gluCylinder(cube, 1, 1, 6, 4, 1) # Body (Bottom)
+    glPopMatrix() 
+
+    glPushMatrix()
+    set_copper(GL_FRONT_AND_BACK)
+    glTranslated(-2.5,0, 3)
+    glScaled(10, 0.5, 0.55) # Stretch body
+    glRotated(-90, 1, 0,0) # Drawing body parallel to x-axis
+    gluCylinder(cube, 1, 1, 6, 4, 1) # Body (Bottom)
+    glPopMatrix() 
+
+
+
+
     """Draw the objects in the scene: cylinders, spheres, and floor."""
     if floor_option == 1:
         # Draw a floor with bad lighting effects.
@@ -301,37 +369,6 @@ def set_normal_wave(x, z):
     """
     glNormal3f(-0.25*math.cos(x+time*0.01), 1, 
                -0.25*math.cos(z+time*0.001))
-def loadWoodTexture():
-    global woodTextureName
-
-    # Load the image and crop it to the proper 128x128 (or edit the file!)
-    im = Image.open("Wood-Texture.png")
-    print("Wood dimensions: {0}".format(im.size))  # If you want to see the image's original dimensions
-    dim = 128
-    size = (0,0,dim,dim)
-    texture = im.crop(size).tobytes("raw")   # The cropped texture
-    
-    concreteTextureName = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, concreteTextureName)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dim, dim, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, texture)
-
-def loadImageTexture(filename):
-    # Load the image from the file and return as a texture
-    im = Image.open(filename)
-    print("Wood dimensions: {0}".format(im.size))  # If you want to see the image's original dimensions
-    #dim = 128
-    #size = (0,0,dim,dim)
-    #texture = im.crop(size).tobytes("raw")   # The cropped texture
-    texture = im.tobytes("raw")   # The cropped texture
-    dimX = im.size[0]
-    dimY = im.size[1]
-    
-    returnTextureName = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, returnTextureName)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dimX, dimY, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, texture)
-    return returnTextureName
 
 def draw_floor(size, divisions=1, f=None, df=None):
     """Draws a floor of a given size and type.
@@ -456,7 +493,7 @@ def set_copper(face):
     glMaterialfv(face, GL_DIFFUSE, diffuse);
     glMaterialfv(face, GL_SPECULAR, specular);
     glMaterialf(face, GL_SHININESS, shininess);
-    
+
 def set_pewter(face):
     """Set the material properties of the given face to "pewter"-esque.
 

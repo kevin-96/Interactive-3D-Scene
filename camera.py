@@ -54,15 +54,13 @@ class Camera:
                   0, 1, 0)                             # Camera is always oriented vertically
         
     def slide(self, du, dv, dn):
-        # This is not complete!  It does not move along the u-axis (x-axis)!
         rad = math.radians(self.lookAngle)
         lookDX = math.sin(rad)
         lookDZ = math.cos(rad)
         
-        self.eye.x += dn*lookDX
+        self.eye.x += dn*lookDX + du*lookDZ
         self.eye.y += dv
-        self.eye.z += dn*lookDZ
-    
+        self.eye.z += dn*lookDZ - du*lookDX
     def turn(self, angle):
         """ Turn the camera by the given angle"""
         self.lookAngle += angle
