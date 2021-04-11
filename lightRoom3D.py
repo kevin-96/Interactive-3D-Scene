@@ -187,6 +187,7 @@ def keyboard(key, x, y):
         # Go down
         camera.slide(0, -1, 0)
         glutPostRedisplay()
+
     elif key == b'f':
         global fire
         fire = True
@@ -257,6 +258,19 @@ def draw_scene():
     draw_objects() 
 
 def draw_objects():
+    glPushMatrix()
+    glTranslate(-1, 2, 10)   #0, 2, 30
+    set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
+    gluSphere(ball, 1.0, 30, 2)
+   
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(5, 2, 10)   #0, 2, 30
+    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
+    gluSphere(ball, 1.0, 30, 2)
+   
+    glPopMatrix()
     """Draw the objects in the scene: cylinders, spheres, and floor."""
     if floor_option == 1:
         # Draw a floor with bad lighting effects.
@@ -271,17 +285,6 @@ def draw_objects():
         # Draw a nice wavy floor with proper surface normals.
         draw_floor(30, 30, wave, set_normal_wave)
     
-    glPushMatrix()
-    glTranslated(0, 6, 0)
-    set_copper(GL_FRONT)   # Make material attributes mimic copper.
-    gluCylinder(tube, 3, 3, 10, 10, 10)
-    gluCylinder(tube, 3, 1, 10, 10, 10)
-    glPushMatrix()
-    glTranslated(0, 0, bullet_distance)
-    glScaled(1, 1, 2)
-    gluSphere(ball, 0.9, 10, 10)
-    glPopMatrix()
-    glPopMatrix()
 
 def wave(x, z):
     """Returns a point on a 2-d "wave" trigonemtric function."""
@@ -402,11 +405,11 @@ def place_main_light():
 
     # This part draws a SELF-COLORED sphere (in spot where light is!)
     glPushMatrix()
-    glTranslatef(lx,ly,lz)
-    glDisable(GL_LIGHTING)
+    glTranslatef(2,ly,2)
+   #glDisable(GL_LIGHTING)
     glColor3f(0, 0, brightness)
     glutSolidSphere(0.5, 20, 20)
-    glEnable(GL_LIGHTING)
+  #  glEnable(GL_LIGHTING)
     glPopMatrix()
 
 def set_copper(face):
@@ -434,6 +437,21 @@ def set_pewter(face):
     diffuse = [ 0.427451, 0.470588, 0.541176, 1.0 ]
     specular = [ 0.3333, 0.3333, 0.521569, 1.0 ]
     shininess = 9.84615
+    glMaterialfv(face, GL_AMBIENT, ambient);
+    glMaterialfv(face, GL_DIFFUSE, diffuse);
+    glMaterialfv(face, GL_SPECULAR, specular);
+    glMaterialf(face, GL_SHININESS, shininess);
+
+def set_PolishedSilver(face):
+    """Set the material properties of the given face to "PolishedSilver"-esque.
+
+    Keyword arguments:
+    face -- which face (GL_FRONT, GL_BACK, or GL_FRONT_AND_BACK)
+    """
+    ambient = [ 0.23125, 0.23125, 0.23125, 1.0]
+    diffuse = [ 0.2775, 0.2775, 0.2775, 1.0]
+    specular = [ 0.773911, 0.773911, 0.773911, 1.0]
+    shininess = 89.6
     glMaterialfv(face, GL_AMBIENT, ambient);
     glMaterialfv(face, GL_DIFFUSE, diffuse);
     glMaterialfv(face, GL_SPECULAR, specular);

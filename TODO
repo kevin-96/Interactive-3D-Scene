@@ -3,8 +3,8 @@ Create Objects:
 - 4 Walls, 1 Ceiling (Colored/Textured)
 - Table (Top textured with wood pattern)
 - Desk Lamp
-- Copper Ball
-- Polished Silver Ball
+- Copper BallDONE
+- Polished Silver Ball DONE
 - Pair of Dice (with texture-mapped dots)
 - Textured picutre on the wall (when lights are off)
 
@@ -14,10 +14,10 @@ Create Light Sources:
 - Bright (white) spotlight/flashlight from the camera's view (30 degrees)
 
 Navigation (Functionality):
-- Look up/down (90 degrees)
-- Turn left/right (360 degrees)
-- Move forward/backward
-- Move side to side
+- Look up/down (90 degrees)  DONE
+- Turn left/right (360 degrees) DONE
+- Move forward/backward    DONE
+- Move side to side DONE
 - (SET KEYSTROKE): Button to set the camera back at a starting position
 - (SET KEYSTROKE): Button to level the camera's gaze (look DIRECTLY AHEAD, not up or down)
 - Camera CANNOT walk through walls (the bounds), restrict x and z position
