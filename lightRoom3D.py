@@ -166,37 +166,55 @@ def keyboard(key, x, y):
     elif key == b' ':
         global animate
         animate = not animate
-    elif key == b'a':
-        # Go left
-        camera.turn(2)
-        glutPostRedisplay()
-    elif key == b'A':
-        # Slide left
-        camera.slide(-1, 0, 0)
-        glutPostRedisplay()
-    elif key == b'D':
-        # Slide right
-        camera.slide(1, 0, 0)
-        glutPostRedisplay()
-    elif key == b'd':
-        # Go right
-        camera.turn(-2)
-        glutPostRedisplay()
     elif key == b'w':
-        # Go forward
+        # Move forward
         camera.slide(0, 0, -2)
         glutPostRedisplay()
     elif key == b's':
-        # Go backward
+        # Move backward
         camera.slide(0, 0, 2)
         glutPostRedisplay()
+    elif key == b'a':
+        # Move left
+        camera.slide(-2, 0, 0)
+        glutPostRedisplay()
+    elif key == b'd':
+        # Move right
+        camera.slide(2, 0, 0)
+        glutPostRedisplay()
     elif key == b'q':
-        # Go up
-        camera.slide(0, 1, 0)
+        # Turn camera left
+        camera.turn(2)
         glutPostRedisplay()
     elif key == b'e':
-        # Go down
+        # Turn camera right
+        camera.turn(-2)
+        glutPostRedisplay()
+    elif key == b'z':
+        # Tilt camera down
+        camera.tilt(-3)
+        glutPostRedisplay()
+    elif key == b'c':
+        # Tilt camera up
+        camera.tilt(3)
+        glutPostRedisplay()
+    elif key == b'x':
+        # Level gaze (straight ahead)
+        camera.levelTilt()
+        glutPostRedisplay()
+    elif key == b'r':
+        # Set camera back to starting position
+        camera.resetPosition()
+        glutPostRedisplay()
+
+    # TODO: REMOVE BEFORE SUBMITTING!!!
+    elif key == b'o':
+        # Go down (DEBUGGING)
         camera.slide(0, -1, 0)
+        glutPostRedisplay()
+    elif key == b'p':
+        # Go up (DEBUGGING)
+        camera.slide(0, 1, 0)
         glutPostRedisplay()
 
     elif key == b'f':
