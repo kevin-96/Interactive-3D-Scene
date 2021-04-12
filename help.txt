@@ -1,0 +1,16 @@
+Welcome to this interactive scene! Use the following keys to interact with the scene:
+
+Camera:
+'w' = Move forward
+'s' = Move backward
+'a' = Move left (side to side)
+'d' = Move right (side to side)
+'q' = Look left
+'e' = Look right
+'z' = Look down
+'c' = Look up
+'x' = Look straight ahead (Set gaze level straight)
+'r' = Go back to starting position
+
+Light:
+Animation:

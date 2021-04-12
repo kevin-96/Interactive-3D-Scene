@@ -22,6 +22,7 @@ import sys
 from utils import *
 from camera import *
 import math
+from PIL import Image
 
 # These parameters describe window properties
 win_width = 800
@@ -32,7 +33,8 @@ win_name = b'Mi Casa Es Su Casa :) Bienvenidos'
 CAM_NEAR = 0.01
 CAM_FAR = 1000.0
 CAM_ANGLE = 60.0
-INITIAL_EYE = Point(0, 2, 30)
+INITIAL_EYE = Point(0, 6, 17)
+START_EYE = Point(0, 6, 17) # Used to reset starting position of camera
 INITIAL_LOOK_ANGLE = 0
 camera = Camera(CAM_ANGLE, win_width/win_height, CAM_NEAR, CAM_FAR, INITIAL_EYE, INITIAL_LOOK_ANGLE)
 
@@ -204,8 +206,13 @@ def keyboard(key, x, y):
         glutPostRedisplay()
     elif key == b'r':
         # Set camera back to starting position
-        camera.resetPosition()
+        # print(INITIAL_EYE) # DEBUGGING
+        camera.setPosition(START_EYE)
         glutPostRedisplay()
+    elif key == b'h':
+        # Print help message (console)
+        file = open("help.txt", "r")
+        print(file.read())
 
     # TODO: REMOVE BEFORE SUBMITTING!!!
     elif key == b'o':
@@ -369,7 +376,6 @@ def draw_objects():
     else:
         # Draw a nice wavy floor with proper surface normals.
         draw_floor(30, 30, wave, set_normal_wave)
-    
 
 def wave(x, z):
     """Returns a point on a 2-d "wave" trigonemtric function."""
@@ -496,6 +502,38 @@ def place_main_light():
     glutSolidSphere(0.5, 20, 20)
   #  glEnable(GL_LIGHTING)
     glPopMatrix()
+
+
+def drawPlane(width, height, texture):
+    """ Draw a textured plane of the specified dimension. """
+    glBindTexture(GL_TEXTURE_2D, texture)
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL) # try GL_DECAL/GL_REPLACE/GL_MODULATE
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)           # try GL_NICEST/GL_FASTEST
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)  # try GL_CLAMP/GL_REPEAT/GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) # try GL_LINEAR/GL_NEAREST
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+      
+    # Enable/Disable each time or OpenGL ALWAYS expects texturing!
+    glEnable(GL_TEXTURE_2D)
+   
+    ex = width/2
+    sx = -ex
+    ey = height
+    sy = 0
+    glBegin(GL_QUADS)
+    glNormal3f(0, 0, 1)
+    glTexCoord2f(0, 0)
+    glVertex3f(sx, sy, 0)
+    glTexCoord2f(width/10, 0)
+    glVertex3f(ex, sy, 0)
+    glTexCoord2f(width/10, height/10)
+    glVertex3f(ex, ey, 0)
+    glTexCoord2f(0, height/10)
+    glVertex3f(sx, ey, 0)
+    glEnd()
+   
+    glDisable(GL_TEXTURE_2D)
 
 def set_copper(face):
     """Set the material properties of the given face to "copper"-esque.

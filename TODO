@@ -4,13 +4,13 @@ KEY:
 
 Create Objects:
 - Floor (Textured with checkerboard pattern)
-- 4 Walls, 1 Ceiling (Colored/Textured)
-- Table (Top textured with wood pattern
+- 4 Walls, 1 Ceiling (All Colored/Textured)
+- Table (Top textured with wood pattern)
 - Desk Lamp
 - Copper Ball
 - Polished Silver Ball
 - Pair of Dice (with texture-mapped dots)
-- Textured picutre on the wall (when lights are off)
+- Textured picture on the wall (when lights are off)
 
 Create Light Sources:
 - 3 Overhead Lights (1 Red, 1 Green, 1 Blue) on the ceiling (Draw a colored ball to represent the light source position/color)
@@ -22,12 +22,12 @@ X Look up/down (90 degrees)
 X Turn left/right (360 degrees)
 X Move forward/backward
 X Move side to side
-- (SET KEYSTROKE): Button to set the camera back at a starting position
+X (SET KEYSTROKE): Button to set the camera back at a starting position
 X (SET KEYSTROKE): Button to level the camera's gaze (look DIRECTLY AHEAD, not up or down)
 - Camera CANNOT walk through walls, set x and z boundaries
 
 Other functionality:
-- 'h': prints a help message in the console
+X 'h': prints a help message in the console (Text from help.txt)
 - 0-4: Turns off one of each of the lights (There are 5 lights total, see light sources above)
     *** When all lights (except camera flashlight) are off, the textured picture on the wall appears ***
 - (SET KEYSTROKE): The Copper Ball rolls around (in a circle) on the table top. Pressing same button stops the movement (Animation)

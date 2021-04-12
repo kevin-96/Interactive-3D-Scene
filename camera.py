@@ -34,6 +34,7 @@ class Camera:
         self.near = near
         self.far = far
         self.eye = eye
+        # self.startPos = eye
         self.lookAngle = lookAngle # For Yaw
         self.tiltAngle = tiltAngle # For Pitch
 
@@ -66,17 +67,19 @@ class Camera:
                   lookX, lookY, lookZ,                 # Camera's look at point
                   0, 1, 0)                             # Camera is always oriented vertically
 
-    def resetPosition(self):
+    def setPosition(self, point):
         # glMatrixMode(GL_MODELVIEW);
         # glLoadIdentity();
-
         global lookX, lookY, lookZ
-        startingPos = Point(0,0,0) # Starting Position (Origin)
-        
-        gluLookAt(startingPos.x, startingPos.y, startingPos.z,  # Camera's starting position (from startingPos)
-                  lookX, lookY, lookZ,                          # Camera's look at point (remains same)
-                  0, 1, 0)                                      # Camera is always oriented vertically
-        
+
+        self.eye.x = point.x
+        self.eye.y = point.y
+        self.eye.z = point.z
+
+        gluLookAt(self.eye.x, self.eye.y, self.eye.z,   # Camera's starting position
+                  lookX, lookY, lookZ,                  # Camera's look at point (remains same)
+                  0, 1, 0)                              # Camera is always oriented vertically
+
     def slide(self, du, dv, dn):
         rad = math.radians(self.lookAngle)
         lookDX = math.sin(rad)
