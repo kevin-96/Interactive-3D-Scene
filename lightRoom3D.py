@@ -53,6 +53,7 @@ deskBrightness=0.75 # Desk lamp (spotlight)
 redBrightness = 1.0 # Red spotlight
 blueBrightness = 1.0 # Blue spotlight
 greenBrightness = 1.0 # Green spotlight
+flashBrightness = 1.0 # Flashlight spotlight
 
 # Checkerboard dimensions (texture dimensions are powers of 2)
 NROWS = 64
@@ -76,6 +77,7 @@ is_desk_spotlight_on=True
 is_red_spotlight_on=True
 is_blue_spotlight_on=True
 is_green_spotlight_on=True
+is_flash_spotlight_on=True
 exiting = False
 use_smooth = True
 use_spotlight = True
@@ -309,6 +311,17 @@ def keyboard(key, x, y):
         elif is_blue_spotlight_on ==False:
             blueBrightness=1.0
             is_blue_spotlight_on=True
+            glutPostRedisplay()
+    elif key == b'4':
+        # Toggle blue light source
+        global is_flash_spotlight_on
+        if is_flash_spotlight_on ==True:
+            is_flash_spotlight_on=False
+            flashBrightness=0.0
+            glutPostRedisplay()
+        elif is_flash_spotlight_on ==False:
+            flashBrightness=1.0
+            is_flash_spotlight_on=True
             glutPostRedisplay()
 
     # elif key == b'1':
@@ -835,6 +848,51 @@ def place_BlueLight():
     glEnable(GL_LIGHTING)
     glPopMatrix()
 
+def place_FlashLight():
+    """Set up the flash light."""
+    activeLight = GL_LIGHT6
+    glMatrixMode(GL_MODELVIEW)
+    lx = Initial
+    ly = 10
+    lz = 5
+    light_position = [ lx, ly, lz, 1.0 ]
+    #Turqouise lighting 
+    light_ambient = [ 1 * flash_Brightness, 1 * flash_Brightness, 1 * flash_Brightness, 1.0 ]
+    light_diffuse = [ 1 * flash_Brightness, 1 * flash_Brightness, 1 * flash_Brightness, 1.0 ]
+    light_specular = [ 1 * flash_Brightness, 1 * flash_Brightness, 1 * flash_Brightness, 1.0 ]
+    light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
+
+    # For Light 0, set position, ambient, diffuse, and specular values
+    glLightfv(activeLight, GL_POSITION, light_position)
+    glLightfv(activeLight, GL_AMBIENT, light_ambient)
+    glLightfv(activeLight, GL_DIFFUSE, light_diffuse)
+    glLightfv(activeLight, GL_SPECULAR, light_specular)
+
+    # Constant attenuation (for distance, etc.)
+    # Only works for fixed light locations!  Otherwise disabled
+    # glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
+    # glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
+    # glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
+
+    # Create a spotlight effect
+    if is_flash_spotlight_on:
+        glLightf(GL_LIGHT6, GL_SPOT_CUTOFF,55.0)
+        glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 0.0)
+        glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, light_direction)
+    else:
+        glLightf(GL_LIGHT6, GL_SPOT_CUTOFF,0)
+        glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 0.0)
+        
+    glEnable(activeLight)
+
+    # Draw sphere to represent the light source
+    # glPushMatrix()
+    # glTranslatef(lx,ly,lz)
+    # glDisable(GL_LIGHTING)
+    # glColor3f(0,0,flash_Brightness)
+    # glutSolidSphere(0.5, 20, 20)
+    # glEnable(GL_LIGHTING)
+    # glPopMatrix()    
 
 def drawPlane(width, height, texture):
     """ Draw a textured plane of the specified dimension. """
