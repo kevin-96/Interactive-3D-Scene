@@ -7,7 +7,7 @@ HOW TO RUN THE PROGRAM:
 
 1. Unzip the project file ("Interactive3DScene.zip")
 2. Using a terminal, navigate to the folder that was unzipped
-3. In that folder, run the following command "python3 lightRoom3D.py" (Make sure Python is installed on your machine! Program will not run if Python isn't installed.)
+3. In that folder, run the following command "python3 lightRoom3D.py" (Make sure Python is installed on your machine! Also, import OpenGL and PIL libraries)
 
 HOW TO INTERACT WITH THE SCENE:
 Camera Movement Controls:
@@ -27,6 +27,7 @@ Light:
 '1' = Toggle red light on/off
 '2' = Toggle green light on/off
 '3' = Toggle blue light on/off
+'4' = Toggle camera flashlight on/off
 
 EXTRA FEATURES:
 nope. not yet...

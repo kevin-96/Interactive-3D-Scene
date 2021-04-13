@@ -32,10 +32,11 @@ win_name = b'Mi Casa Es Su Casa :) Bienvenidos'
 CAM_NEAR = 0.01
 CAM_FAR = 1000.0
 CAM_ANGLE = 60.0
-INITIAL_EYE = Point(0, 6, 17)
-START_EYE = Point(0, 6, 17) # Used to reset starting position of camera
-INITIAL_LOOK_ANGLE = 0
-camera = Camera(CAM_ANGLE, win_width/win_height, CAM_NEAR, CAM_FAR, INITIAL_EYE, INITIAL_LOOK_ANGLE)
+INITIAL_EYE = Point(12, 7, 13)
+START_EYE = Point(12, 7, 13) # Used to reset starting position of camera (Not in constructor)
+INITIAL_LOOK_ANGLE = 45 # Initally, look to the left
+INITIAL_TILT_ANGLE = 0 # Looking straight ahead
+camera = Camera(CAM_ANGLE, win_width/win_height, CAM_NEAR, CAM_FAR, INITIAL_EYE, INITIAL_LOOK_ANGLE, INITIAL_TILT_ANGLE)
 
 # These parameters define simple animation properties
 FPS = 60.0
@@ -43,7 +44,8 @@ DELAY = int(1000.0 / FPS + 0.5)
 DEFAULT_STEP = 0.001
 angle_step = 0.1
 angle_movement = 45
-light_height = 15
+rgb_light_height = 15
+light_height = 16
 light_height_dy = 0.05
 LIGHT_TOP = 30
 LIGHT_BOTTOM = -5
@@ -65,9 +67,12 @@ ROOM_WIDTH = 30
 ROOM_HEIGHT = 17
 
 # Global variables for camera boundaries
-BOUND_X = 15
-BOUND_Y = 17
-BOUND_Z = 17
+BOUND_X_MAX = 14.9
+BOUND_X_MIN = -14.9
+BOUND_Y_MAX = 16.9
+BOUND_Y_MIN = 0.1
+BOUND_Z_MAX = 14.9
+BOUND_Z_MIN = -14.9
 
 # These parameters are flags that can be turned on and off (for effect)
 animate = False
@@ -179,6 +184,21 @@ def advance():
         if bullet_distance > CAM_FAR:
             bullet_distance = 0
             fire = False
+
+# Check if the camera meets the room's boundaries
+def checkBounds():
+    if camera.eye.x >= BOUND_X_MAX:
+        camera.eye.x = BOUND_X_MAX
+    elif camera.eye.x <= BOUND_X_MIN:
+        camera.eye.x = BOUND_X_MIN
+    if camera.eye.y >= BOUND_Y_MAX:
+        camera.eye.y = BOUND_Y_MAX
+    elif camera.eye.y <= BOUND_Y_MIN:
+        camera.eye.y = BOUND_Y_MIN
+    if camera.eye.z >= BOUND_Z_MAX:
+        camera.eye.z = BOUND_Z_MAX
+    elif camera.eye.z <= BOUND_Z_MIN:
+        camera.eye.z = BOUND_Z_MIN
         
 def special_keys(key, x, y):
     """Process any special keys that are pressed."""
@@ -197,27 +217,28 @@ def keyboard(key, x, y):
     elif key == b' ':
         global animate
         animate = not animate
+
     elif key == b'w':
         # Move forward
         camera.slide(0, 0, -2)
-        print(INITIAL_EYE) # Print camera's position (DEBUGGING)
+        checkBounds() # Check if camera hits bounds
+        # print(INITIAL_EYE) # Print camera's position (DEBUGGING)
         glutPostRedisplay()
     elif key == b's':
         # Move backward
         camera.slide(0, 0, 2)
-        print(INITIAL_EYE) # Print camera's position (DEBUGGING)
+        checkBounds() # Check if camera hits bounds
         glutPostRedisplay()
     elif key == b'a':
         # Move left
         camera.slide(-2, 0, 0)
-        print(INITIAL_EYE) # Print camera's position (DEBUGGING)
+        checkBounds() # Check if camera hits bounds
         glutPostRedisplay()
     elif key == b'd':
         # Move right
         camera.slide(2, 0, 0)
-        print(INITIAL_EYE) # Print camera's position (DEBUGGING)
+        checkBounds() # Check if camera hits bounds
         glutPostRedisplay()
-    
     elif key == b'q':
         # Turn camera left
         camera.turn(3)
@@ -251,10 +272,12 @@ def keyboard(key, x, y):
     elif key == b'o':
         # Go down (DEBUGGING)
         camera.slide(0, -1, 0)
+        checkBounds() # Check if camera hits bounds
         glutPostRedisplay()
     elif key == b'p':
         # Go up (DEBUGGING)
         camera.slide(0, 1, 0)
+        checkBounds() # Check if camera hits bounds
         glutPostRedisplay()
 
     # TODO: Get rid of fire (or swap out for different animation)
@@ -379,6 +402,7 @@ def draw_scene():
     place_RedLight()
     place_BlueLight()
     place_DeskLight()
+    place_FlashLight()
 
     # Set up the main light (LIGHT0)... or not.
     if is_light_on:
@@ -386,12 +410,93 @@ def draw_scene():
     else:
         glDisable(GL_LIGHT0)
 
-
     # Now spin the world around the y-axis (for effect).
-    glRotated(angle_movement, 0, 1, 0)
+    # glRotated(angle_movement, 0, 1, 0)
     draw_objects()
 
+def draw_objects():
+    """Draw the objects in the scene: cylinders, spheres, floor, walls, ceilings."""
+    global ROOM_LENGTH, ROOM_WIDTH, ROOM_HEIGHT
+
+    # Draw Textured Floor
+    glPushMatrix()
+    glTranslate(0, 0, 15)
+    glRotated(-90, 1, 0, 0)
+    # draw_floor(30, 100) # Draw a floor with improved lighting effects. # DEBUGGING
+    drawPlane(ROOM_WIDTH, ROOM_LENGTH, checkerBoardName)
+    glPopMatrix()
+
+    # Draw Ceiling
+    glPushMatrix()
+    glTranslate(0, 17, 15)
+    glRotated(-90, 1, 0, 0)
+    drawPlane(ROOM_WIDTH, ROOM_LENGTH, ceilingTextureName)
+    glPopMatrix()
+
+    # Draw Textured Walls (Brick)
+    glPushMatrix()
+    glTranslate(0, 0, 15)
+    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName) # Wall 1
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(0, 0, -15)
+    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName) # Wall 2
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(-15, 0, 0)
+    glRotated(90, 0, 1, 0)
+    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName) # Wall 3
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(15, 0, 0)
+    glRotated(90, 0, 1, 0)
+    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName) # Wall 4
+    glPopMatrix()
     
+
+    # Draw Copper Ball
+    glPushMatrix()
+    glTranslate(-5, 4.3, 0)   #0, 2, 30
+    glScale(.5,.5,.5)
+    set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
+    gluSphere(ball, 1.0, 30, 30)
+    glPopMatrix()
+
+    # Draw Silver Polished Ball
+    glPushMatrix()
+    glTranslate(-10, 4.3, -0)  
+    glScale(.5,.5,.5)
+    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
+    gluSphere(ball, 1.0, 30, 30)
+    glPopMatrix()
+
+    # Draw table
+    glPushMatrix()
+    glTranslate(-5, 0, -10)
+    glScale(1.4,1.4,1.4)
+    draw_table()
+    glPopMatrix()
+
+    # Draw die 1
+    glPushMatrix()
+    glTranslate(-7, 4.3, 5)   
+    glScale(0.2,0.2,0.2)
+    glRotated(-90, 1, 0, 0)
+    draw_die()
+    glPopMatrix()
+
+    # Draw die 2
+    glPushMatrix()
+    glTranslate(-10, 4.3, 5)  
+    glScale(0.2,0.2,0.2)
+    glRotated(-90, 1, 0, 0)
+    glTranslate(0, 2, 0)
+    draw_die()   
+    glPopMatrix()
+
 def draw_table(): 
     glPushMatrix()
     glTranslate(-5, 0, 10)   #0, 2, 30
@@ -424,94 +529,12 @@ def draw_table():
     glPushMatrix()
     glTranslated(-2,2.3, 8)
     glScaled(1.5, .15, 1) # Stretch body
-# glRotated(45, 0, 0, 1) # Drawing body parallel to x-axis
+    # glRotated(45, 0, 0, 1) # Drawing body parallel to x-axis
     glutSolidCube(5) # Body (Bottom)
     glPopMatrix()
 
-def draw_objects():
-    """Draw the objects in the scene: cylinders, spheres, floor, walls, ceilings."""
-    global ROOM_LENGTH, ROOM_WIDTH, ROOM_HEIGHT
-
-    # Draw Textured Floor
-    glPushMatrix()
-    glTranslate(0, 0, 15)
-    glRotated(-90, 1, 0, 0)
-    # draw_floor(30, 100) # Draw a floor with improved lighting effects. # DEBUGGING
-    drawPlane(ROOM_WIDTH, ROOM_LENGTH, checkerBoardName)
-    glPopMatrix()
-
-    # Draw Ceiling
-    glPushMatrix()
-    glTranslate(0, 17, 15)
-    glRotated(-90, 1, 0, 0)
-    drawPlane(ROOM_WIDTH, ROOM_LENGTH, ceilingTextureName)
-    glPopMatrix()
-
-    # Draw Textured Walls
-    glPushMatrix()
-    glTranslate(0, 0, 15)
-    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslate(0, 0, -15)
-    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslate(-15, 0, 0)
-    glRotated(90, 0, 1, 0)
-    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslate(15, 0, 0)
-    glRotated(90, 0, 1, 0)
-    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName)
-    glPopMatrix()
-    
-
-    # Draw Copper Ball
-    glPushMatrix()
-    glTranslate(-5, 4.3, 0)   #0, 2, 30
-    glScale(.5,.5,.5)
-    set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
-    gluSphere(ball, 1.0, 30, 30)
-    glPopMatrix()
-
-    # Draw Silver Polished Ball
-    glPushMatrix()
-    glTranslate(-10, 4.3, -0)  
-    glScale(.5,.5,.5)
-    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
-    gluSphere(ball, 1.0, 30, 30)
-    glPopMatrix()
-
-    #Drawing table
-    glPushMatrix()
-    glTranslate(-5, 0, -10)
-    glScale(1.4,1.4,1.4)
-    draw_table()
-    glPopMatrix()
-
-    #Drawing die 1
-    glPushMatrix()
-    glTranslate(-7, 4.3, 5)   
-    glScale(0.2,0.2,0.2)
-    glRotated(-90, 1, 0, 0)
-    draw_die()
-    glPopMatrix()
-
-    #Drawing die 2
-    glPushMatrix()
-    glTranslate(-10, 4.3, 5)  
-    glScale(0.2,0.2,0.2)
-    glRotated(-90, 1, 0, 0)
-    glTranslate(0, 2, 0)
-    draw_die()   
-    glPopMatrix()
 def draw_die():
-     # Draw Dice 
+    # Draw Die
     glPushMatrix()
     set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
     glutSolidCube(1)    
@@ -714,7 +737,7 @@ def place_RedLight():
     activeLight = GL_LIGHT1
     glMatrixMode(GL_MODELVIEW)
     lx = 0
-    ly = 10
+    ly = rgb_light_height
     lz = -9
     light_position = [ lx, ly, lz, 1.0 ]
     light_ambient = [ 0.9745 * redBrightness, 0.01175 * redBrightness, 0.01175 * redBrightness, 1.0 ]
@@ -759,7 +782,7 @@ def place_GreenLight():
     activeLight = GL_LIGHT2
     glMatrixMode(GL_MODELVIEW)
     lx = 4
-    ly = 10
+    ly = rgb_light_height
     lz = 5
     light_position = [ lx, ly, lz, 1.0 ]
     #Emerald
@@ -806,10 +829,10 @@ def place_BlueLight():
     activeLight = GL_LIGHT3
     glMatrixMode(GL_MODELVIEW)
     lx = -4
-    ly = 10
+    ly = rgb_light_height
     lz = 5
     light_position = [ lx, ly, lz, 1.0 ]
-    #Turqouise lighting 
+    # Bluelighting 
     light_ambient = [ 0.1 * blueBrightness, 0.18725 * blueBrightness, 0.9745 * blueBrightness, 1.0 ]
     light_diffuse = [ 0.396 * blueBrightness, 0.24151 * blueBrightness, 0.89102 * blueBrightness, 1.0 ]
     light_specular = [ 0.297254 * blueBrightness, 0.20829 * blueBrightness, 0.906678 * blueBrightness, 1.0 ]
@@ -850,16 +873,16 @@ def place_BlueLight():
 
 def place_FlashLight():
     """Set up the flash light."""
-    activeLight = GL_LIGHT6
+    activeLight = GL_LIGHT5
     glMatrixMode(GL_MODELVIEW)
-    lx = Initial
-    ly = 10
-    lz = 5
+    lx = camera.eye.x
+    ly = camera.eye.y
+    lz = camera.eye.z
     light_position = [ lx, ly, lz, 1.0 ]
-    #Turqouise lighting 
-    light_ambient = [ 1 * flash_Brightness, 1 * flash_Brightness, 1 * flash_Brightness, 1.0 ]
-    light_diffuse = [ 1 * flash_Brightness, 1 * flash_Brightness, 1 * flash_Brightness, 1.0 ]
-    light_specular = [ 1 * flash_Brightness, 1 * flash_Brightness, 1 * flash_Brightness, 1.0 ]
+    # White lighting 
+    light_ambient = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
+    light_diffuse = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
+    light_specular = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
     light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
 
     # For Light 0, set position, ambient, diffuse, and specular values
@@ -870,18 +893,18 @@ def place_FlashLight():
 
     # Constant attenuation (for distance, etc.)
     # Only works for fixed light locations!  Otherwise disabled
-    # glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
-    # glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
-    # glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
+    glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
+    glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
+    glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
 
     # Create a spotlight effect
     if is_flash_spotlight_on:
-        glLightf(GL_LIGHT6, GL_SPOT_CUTOFF,55.0)
-        glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 0.0)
-        glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, light_direction)
+        glLightf(GL_LIGHT5, GL_SPOT_CUTOFF,30.0)
+        glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 1.0)
+        glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, light_direction)
     else:
-        glLightf(GL_LIGHT6, GL_SPOT_CUTOFF,0)
-        glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 0.0)
+        glLightf(GL_LIGHT5, GL_SPOT_CUTOFF,0)
+        glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 0.0)
         
     glEnable(activeLight)
 
@@ -889,7 +912,7 @@ def place_FlashLight():
     # glPushMatrix()
     # glTranslatef(lx,ly,lz)
     # glDisable(GL_LIGHTING)
-    # glColor3f(0,0,flash_Brightness)
+    # glColor3f(0,0,flashBrightness)
     # glutSolidSphere(0.5, 20, 20)
     # glEnable(GL_LIGHTING)
     # glPopMatrix()    
@@ -998,7 +1021,7 @@ def generateCheckerBoardTexture():
 def loadImageTexture(filename):
     # Load the image from the file and return as a texture
     im = Image.open(filename)
-    print("Image dimensions: {0}".format(im.size))  # If you want to see the image's original dimensions
+    # print("Image dimensions: {0}".format(im.size))  # If you want to see the image's original dimensions
     # dim = 128
     # size = (0,0,dim,dim)
     # texture = im.crop(size).tobytes("raw")   # The cropped texture

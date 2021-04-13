@@ -17,5 +17,9 @@ Light:
 '1' = Toggle red light on/off
 '2' = Toggle green light on/off
 '3' = Toggle blue light on/off
+'4' = Toggle camera flashlight on/off
 
 Animation:
+
+
+Have fun!

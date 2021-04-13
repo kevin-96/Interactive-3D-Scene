@@ -5,7 +5,7 @@ KEY:
 Create Objects:
 X Floor (Textured with checkerboard pattern)
 X 4 Walls, 1 Ceiling (All Colored/Textured)
-- Table (Top textured with wood pattern)
+X Table (Top textured with wood pattern)
 - Desk Lamp
 X Copper Ball
 X Polished Silver Ball
@@ -15,7 +15,7 @@ X Polished Silver Ball
 Create Light Sources:
 X 3 Overhead Lights (1 Red, 1 Green, 1 Blue) on the ceiling (Draw a colored ball to represent the light source position/color)
 X Desk Lamp Light (Dim white light, about 75% intensity)
-- Bright (white) spotlight/flashlight from the camera's view (30 degrees)
+X Bright (white) spotlight/flashlight from the camera's view (30 degrees)
 
 Navigation (Functionality):
 X Look up/down (90 degrees)
@@ -24,7 +24,7 @@ X Move forward/backward
 X Move side to side
 X (SET KEYSTROKE): Button to set the camera back at a starting position
 X (SET KEYSTROKE): Button to level the camera's gaze (look DIRECTLY AHEAD, not up or down)
-- Camera CANNOT walk through walls, set x and z boundaries
+X Camera CANNOT walk through walls, set x and z boundaries
 
 Other functionality:
 X 'h': prints a help message in the console (Text from help.txt)
