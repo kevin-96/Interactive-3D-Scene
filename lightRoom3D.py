@@ -886,13 +886,13 @@ def place_FlashLight():
     glEnable(activeLight)
 
     # Draw sphere to represent the light source
-    glPushMatrix()
-    glTranslatef(lx,ly,lz)
-    glDisable(GL_LIGHTING)
-    glColor3f(0,0,flash_Brightness)
-    glutSolidSphere(0.5, 20, 20)
-    glEnable(GL_LIGHTING)
-    glPopMatrix()    
+    # glPushMatrix()
+    # glTranslatef(lx,ly,lz)
+    # glDisable(GL_LIGHTING)
+    # glColor3f(0,0,flash_Brightness)
+    # glutSolidSphere(0.5, 20, 20)
+    # glEnable(GL_LIGHTING)
+    # glPopMatrix()    
 
 def drawPlane(width, height, texture):
     """ Draw a textured plane of the specified dimension. """
