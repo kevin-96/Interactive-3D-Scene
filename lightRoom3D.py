@@ -61,7 +61,12 @@ NCOLS = 64
 # Global variables for the room
 ROOM_LENGTH = 30
 ROOM_WIDTH = 30
-ROOM_HEIGHT = 30
+ROOM_HEIGHT = 17
+
+# Global variables for camera boundaries
+BOUND_X = 15
+BOUND_Y = 17
+BOUND_Z = 17
 
 # These parameters are flags that can be turned on and off (for effect)
 animate = False
@@ -193,19 +198,24 @@ def keyboard(key, x, y):
     elif key == b'w':
         # Move forward
         camera.slide(0, 0, -2)
+        print(INITIAL_EYE) # Print camera's position (DEBUGGING)
         glutPostRedisplay()
     elif key == b's':
         # Move backward
         camera.slide(0, 0, 2)
+        print(INITIAL_EYE) # Print camera's position (DEBUGGING)
         glutPostRedisplay()
     elif key == b'a':
         # Move left
         camera.slide(-2, 0, 0)
+        print(INITIAL_EYE) # Print camera's position (DEBUGGING)
         glutPostRedisplay()
     elif key == b'd':
         # Move right
         camera.slide(2, 0, 0)
+        print(INITIAL_EYE) # Print camera's position (DEBUGGING)
         glutPostRedisplay()
+    
     elif key == b'q':
         # Turn camera left
         camera.turn(3)
@@ -370,18 +380,46 @@ def draw_scene():
 
 def draw_objects():
     """Draw the objects in the scene: cylinders, spheres, floor, walls, ceilings."""
-    global ROOM_LENGTH, ROOM_WIDTH
+    global ROOM_LENGTH, ROOM_WIDTH, ROOM_HEIGHT
 
-    glPushMatrix()
     # Draw Textured Floor
+    glPushMatrix()
     glTranslate(0, 0, 15)
     glRotated(-90, 1, 0, 0)
     # draw_floor(30, 100) # Draw a floor with improved lighting effects. # DEBUGGING
     drawPlane(ROOM_WIDTH, ROOM_LENGTH, checkerBoardName)
     glPopMatrix()
 
-    # Draw Textured Walls
+    # Draw Ceiling
+    glPushMatrix()
+    glTranslate(0, 17, 15)
+    glRotated(-90, 1, 0, 0)
+    drawPlane(ROOM_WIDTH, ROOM_LENGTH, ceilingTextureName)
+    glPopMatrix()
 
+    # Draw Textured Walls
+    glPushMatrix()
+    glTranslate(0, 0, 15)
+    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(0, 0, -15)
+    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(-15, 0, 0)
+    glRotated(90, 0, 1, 0)
+    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(15, 0, 0)
+    glRotated(90, 0, 1, 0)
+    drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName)
+    glPopMatrix()
+    
 
     # Draw Copper Ball
     glPushMatrix()
@@ -499,11 +537,11 @@ def draw_floor(size, divisions=1, f=None, df=None):
 def drawFloor(width, height, texture):
     """ Draw a textured floor of the specified dimension. """
     glBindTexture(GL_TEXTURE_2D, texture)
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE) # try GL_DECAL/GL_REPLACE/GL_MODULATE
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)           # try GL_NICEST/GL_FASTEST
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)  # try GL_CLAMP/GL_REPEAT/GL_CLAMP_TO_EDGE
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)          # try GL_DECAL/GL_REPLACE/GL_MODULATE
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)                   # try GL_NICEST/GL_FASTEST
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) # try GL_CLAMP/GL_REPEAT/GL_CLAMP_TO_EDGE
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) # try GL_LINEAR/GL_NEAREST
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)    # try GL_LINEAR/GL_NEAREST
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 
     sx = width/2
@@ -553,11 +591,11 @@ def place_main_light():
     
     # Create a spotlight effect (none at the moment)
     if use_spotlight:
-        glLightf(GL_LIGHT0, GL_SPOT_CUTOFF,45.0)
+        glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 45.0)
         glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 2.0)
         glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction)
     else:
-        glLightf(GL_LIGHT0, GL_SPOT_CUTOFF,180.0)
+        glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180.0)
         glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0.0)
     
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, use_lv)
@@ -584,9 +622,9 @@ def place_DeskLight():
     lz = 5
     light_position = [ lx, ly, lz, 1.0 ]
     #White light
-    light_ambient = [ 1*deskBrightness, 1*deskBrightness, 1*deskBrightness, 1.0 ]
-    light_diffuse = [ 1*deskBrightness, 1*deskBrightness, 1*deskBrightness, 1.0 ]
-    light_specular = [ 1*deskBrightness, 1*deskBrightness, 1*deskBrightness, 1.0 ]
+    light_ambient = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
+    light_diffuse = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
+    light_specular = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
     light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
     # light_direction = [ 3.0, -10.0, 0.0, 0.0 ]  # Light points down (and a little to the right)
 
@@ -603,13 +641,13 @@ def place_DeskLight():
     glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
 
     # Create a spotlight effect (none at the moment)
-    glLightf(activeLight, GL_SPOT_CUTOFF,20.0)
+    glLightf(activeLight, GL_SPOT_CUTOFF, 20.0)
     glLightf(activeLight, GL_SPOT_EXPONENT, 0.0)
     glLightfv(activeLight, GL_SPOT_DIRECTION, light_direction)
 
     # Create a spotlight effect
     if is_desk_spotlight_on:
-        glLightf(GL_LIGHT4, GL_SPOT_CUTOFF,45.0)
+        glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, 45.0)
         glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 1.0)
         glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, light_direction)
     else:
@@ -620,7 +658,7 @@ def place_DeskLight():
 
     # This part draws a SELF-COLORED sphere (in spot where light is!)
     glPushMatrix()
-    glTranslatef(lx,ly,lz)
+    glTranslatef(lx, ly, lz)
     glDisable(GL_LIGHTING)
     glColor3f(deskBrightness, deskBrightness, deskBrightness)
     glutSolidSphere(0.3, 12, 12)
