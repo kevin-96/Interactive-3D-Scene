@@ -17,7 +17,7 @@
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GL import *
-#from PIL import Image
+from PIL import Image
 import sys
 from utils import *
 from camera import *
@@ -32,7 +32,8 @@ win_name = b'Mi Casa Es Su Casa :) Bienvenidos'
 CAM_NEAR = 0.01
 CAM_FAR = 1000.0
 CAM_ANGLE = 60.0
-INITIAL_EYE = Point(0, 2, 30)
+INITIAL_EYE = Point(0, 6, 17)
+START_EYE = Point(0, 6, 17) # Used to reset starting position of camera
 INITIAL_LOOK_ANGLE = 0
 camera = Camera(CAM_ANGLE, win_width/win_height, CAM_NEAR, CAM_FAR, INITIAL_EYE, INITIAL_LOOK_ANGLE)
 
@@ -42,22 +43,38 @@ DELAY = int(1000.0 / FPS + 0.5)
 DEFAULT_STEP = 0.001
 angle_step = 0.1
 angle_movement = 45
-light_height = 10
+light_height = 15
 light_height_dy = 0.05
 LIGHT_TOP = 30
 LIGHT_BOTTOM = -5
 time = 0
-brightness = 1.0
+brightness = 1.0 # Default spotlight brightness
+deskBrightness=0.75 # Desk lamp (spotlight)
+redBrightness = 1.0 # Red spotlight
+blueBrightness = 1.0 # Blue spotlight
+greenBrightness = 1.0 # Green spotlight
+
+# Checkerboard dimensions (texture dimensions are powers of 2)
+NROWS = 64
+NCOLS = 64
+
+# Global variables for the room
+ROOM_LENGTH = 30
+ROOM_WIDTH = 30
+ROOM_HEIGHT = 30
 
 # These parameters are flags that can be turned on and off (for effect)
 animate = False
 fire = False
 is_light_on = True
+is_desk_spotlight_on=True
+is_red_spotlight_on=True
+is_blue_spotlight_on=True
+is_green_spotlight_on=True
 exiting = False
 use_smooth = True
 use_spotlight = True
 use_lv = GL_FALSE
-floor_option = 2
 
 def main():
     """Start the main program running."""
@@ -83,13 +100,20 @@ def main():
 
 def init():
     """Perform basic OpenGL initialization."""
-    global tube, ball,cube
+    global tube, ball, cube, brickTextureName, ceilingTextureName, woodTextureName, checkerboardTextureName
     tube = gluNewQuadric()
     gluQuadricDrawStyle(tube, GLU_FILL)
     ball = gluNewQuadric()
     gluQuadricDrawStyle(ball, GLU_FILL)
     cube = gluNewQuadric()
     gluQuadricDrawStyle(cube, GLU_FILL)
+
+    # Generate or load the textures into memory
+    generateCheckerBoardTexture()
+    brickTextureName = loadImageTexture("textures/brickWall.jpg")
+    ceilingTextureName = loadImageTexture("textures/ceiling.jpg")
+    woodTextureName = loadImageTexture("textures/wood.png")
+    checkerboardTextureName = loadImageTexture("textures/checkerboard.png")
   
     # Set up lighting and depth-test
     glEnable(GL_LIGHTING)
@@ -159,7 +183,7 @@ def special_keys(key, x, y):
 
 def keyboard(key, x, y):
     """Process any regular keys that are pressed."""
-    global brightness, floor_option
+    global brightness, redBrightness, greenBrightness, blueBrightness, deskBrightness
     if ord(key) == 27:  # ASCII code 27 = ESC-key
         global exiting
         exiting = True
@@ -184,11 +208,11 @@ def keyboard(key, x, y):
         glutPostRedisplay()
     elif key == b'q':
         # Turn camera left
-        camera.turn(2)
+        camera.turn(3)
         glutPostRedisplay()
     elif key == b'e':
         # Turn camera right
-        camera.turn(-2)
+        camera.turn(-3)
         glutPostRedisplay()
     elif key == b'z':
         # Tilt camera down
@@ -204,10 +228,14 @@ def keyboard(key, x, y):
         glutPostRedisplay()
     elif key == b'r':
         # Set camera back to starting position
-        camera.resetPosition()
+        # print(INITIAL_EYE) # DEBUGGING
+        camera.setPosition(START_EYE)
         glutPostRedisplay()
+    elif key == b'h':
+        # Print help message (console)
+        file = open("help.txt", "r")
+        print(file.read())
 
-    # TODO: REMOVE BEFORE SUBMITTING!!!
     elif key == b'o':
         # Go down (DEBUGGING)
         camera.slide(0, -1, 0)
@@ -217,25 +245,78 @@ def keyboard(key, x, y):
         camera.slide(0, 1, 0)
         glutPostRedisplay()
 
+    # TODO: Get rid of fire (or swap out for different animation)
     elif key == b'f':
         global fire
         fire = True
+
     elif key == b'l':
+        # Turn default light (DEBUGGING)
         global is_light_on
         is_light_on = not is_light_on
         glutPostRedisplay()
+
+    elif key == b'0':
+        # Toggle desk lamp light source
+        global is_desk_spotlight_on
+        if is_desk_spotlight_on ==True:
+            is_desk_spotlight_on=False
+            deskBrightness=0.0
+            glutPostRedisplay()
+        elif  is_desk_spotlight_on ==False:
+            deskBrightness=1.0
+            is_desk_spotlight_on=True
+            glutPostRedisplay()
     elif key == b'1':
-        global use_smooth
-        use_smooth = not use_smooth
-        glutPostRedisplay()
+        # Toggle red light source
+        global is_red_spotlight_on
+        if is_red_spotlight_on ==True:
+            is_red_spotlight_on=False
+            redBrightness=0.0
+            glutPostRedisplay()
+        elif  is_red_spotlight_on ==False:
+            redBrightness=1.0
+            is_red_spotlight_on=True
+            glutPostRedisplay()
     elif key == b'2':
+        # Toggle green light source
+        global is_green_spotlight_on
+        if is_green_spotlight_on ==True:
+            is_green_spotlight_on=False
+            greenBrightness=0.0
+            glutPostRedisplay()
+        elif  is_green_spotlight_on ==False:
+            greenBrightness=1.0
+            is_green_spotlight_on=True
+            glutPostRedisplay()
+    elif key == b'3':
+        # Toggle blue light source
+        global is_blue_spotlight_on
+        if is_blue_spotlight_on ==True:
+            is_blue_spotlight_on=False
+            blueBrightness=0.0
+            glutPostRedisplay()
+        elif is_blue_spotlight_on ==False:
+            blueBrightness=1.0
+            is_blue_spotlight_on=True
+            glutPostRedisplay()
+
+    # elif key == b'1':
+    #     global use_smooth
+    #     use_smooth = not use_smooth
+    #     glutPostRedisplay()
+
+    elif key == b'.':
+        # Toggle default light spotlight (DEBUGGING)
         global use_spotlight
         use_spotlight = not use_spotlight
         glutPostRedisplay()
-    elif key == b'3':
-        global use_lv
-        use_lv = GL_FALSE if use_lv == GL_TRUE else GL_TRUE
-        glutPostRedisplay()
+
+    # elif key == b'3':
+    #     global use_lv
+    #     use_lv = GL_FALSE if use_lv == GL_TRUE else GL_TRUE
+    #     glutPostRedisplay()
+
     elif key == b'4':
         brightness = brightness * 0.9
         glutPostRedisplay()
@@ -243,12 +324,6 @@ def keyboard(key, x, y):
         brightness = brightness / 0.9
         if brightness > 1.0:
             brightness = 1.0
-        glutPostRedisplay()
-    elif key == b'6':
-        floor_option = floor_option+1 if floor_option < 4 else 1
-        glutPostRedisplay()
-    elif key == b'7':
-        floor_option = floor_option-1 if floor_option > 1 else 4
         glutPostRedisplay()
     elif key == b'-':
         # Move light down
@@ -276,9 +351,11 @@ def draw_scene():
     amb = [ 0*brightness, 0*brightness, 0*brightness, 1.0 ]
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb)
 
-    place_light0()
-    place_light1()
-    place_light2()
+    # Placing each light
+    place_GreenLight()
+    place_RedLight()
+    place_BlueLight()
+    place_DeskLight()
 
     # Set up the main light (LIGHT0)... or not.
     if is_light_on:
@@ -286,25 +363,41 @@ def draw_scene():
     else:
         glDisable(GL_LIGHT0)
 
+
     # Now spin the world around the y-axis (for effect).
     glRotated(angle_movement, 0, 1, 0)
-    draw_objects() 
+    draw_objects()
 
 def draw_objects():
+    """Draw the objects in the scene: cylinders, spheres, floor, walls, ceilings."""
+    global ROOM_LENGTH, ROOM_WIDTH
+
+    glPushMatrix()
+    # Draw Textured Floor
+    glTranslate(0, 0, 15)
+    glRotated(-90, 1, 0, 0)
+    # draw_floor(30, 100) # Draw a floor with improved lighting effects. # DEBUGGING
+    drawPlane(ROOM_WIDTH, ROOM_LENGTH, checkerBoardName)
+    glPopMatrix()
+
+    # Draw Textured Walls
+
+
+    # Draw Copper Ball
     glPushMatrix()
     glTranslate(5, 2, 10)   #0, 2, 30
     set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
-    gluSphere(ball, 1.0, 30, 2)
-   
+    gluSphere(ball, 1.0, 30, 30)
     glPopMatrix()
 
+    # Draw Silver Polished Ball
     glPushMatrix()
     glTranslate(10, 2, 10)   #0, 2, 30
-    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
-    gluSphere(ball, 1.0, 30, 2)
+    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
+    gluSphere(ball, 1.0, 30, 30)
     glPopMatrix()
 
-##Makes Table
+    # Makes Table
     glPushMatrix()
     glTranslate(-5, 0, 10)   #0, 2, 30
     glRotated(-90, 1, 0, 0)
@@ -340,57 +433,7 @@ def draw_objects():
     gluCylinder(cube, 1, 1, 6, 4, 1) # Body (Bottom)
     glPopMatrix()
 
-    #Walls 
-    glPushMatrix()
-    set_copper(GL_FRONT_AND_BACK)
-    glTranslated(-2.5,0, 3)
-    glScaled(10, 0.5, 0.55) # Stretch body
-    glRotated(-90, 1, 0,0) # Drawing body parallel to x-axis
-    gluCylinder(cube, 1, 1, 6, 4, 1) # Body (Bottom)
-    glPopMatrix() 
 
-    glPushMatrix()
-    set_copper(GL_FRONT_AND_BACK)
-    glTranslated(-2.5,0, 3)
-    glScaled(10, 0.5, 0.55) # Stretch body
-    glRotated(-90, 1, 0,0) # Drawing body parallel to x-axis
-    gluCylinder(cube, 1, 1, 6, 4, 1) # Body (Bottom)
-    glPopMatrix() 
-
-
-
-
-    """Draw the objects in the scene: cylinders, spheres, and floor."""
-    if floor_option == 1:
-        # Draw a floor with bad lighting effects.
-        draw_floor(30, 2)
-    elif floor_option == 2:
-        # Draw a floor with improved lighting effects.
-        draw_floor(30, 30)
-    elif floor_option == 3:
-        # Draw a wavy floor with decent lighting.
-        draw_floor(30, 30, wave)
-    else:
-        # Draw a nice wavy floor with proper surface normals.
-        draw_floor(30, 30, wave, set_normal_wave)
-    
-
-def wave(x, z):
-    """Returns a point on a 2-d "wave" trigonemtric function."""
-    return math.sin(x+time*0.01)*0.25 + math.sin(z+time*0.001)*0.25
-
-def set_normal_wave(x, z):
-    """Sets the normal of a point on the aforementioned wave.
-
-    The calculation is done using the derivatives of the wave function
-    and would need to be rewritten if wave function changes.
-
-    Keyword arguments:
-    x -- The x position on the "wave"
-    z -- The y position on the "wave"
-    """
-    glNormal3f(-0.25*math.cos(x+time*0.01), 1, 
-               -0.25*math.cos(z+time*0.001))
 
 def draw_floor(size, divisions=1, f=None, df=None):
     """Draws a floor of a given size and type.
@@ -453,6 +496,37 @@ def draw_floor(size, divisions=1, f=None, df=None):
             glEnd()
     glPopMatrix()
 
+def drawFloor(width, height, texture):
+    """ Draw a textured floor of the specified dimension. """
+    glBindTexture(GL_TEXTURE_2D, texture)
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE) # try GL_DECAL/GL_REPLACE/GL_MODULATE
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)           # try GL_NICEST/GL_FASTEST
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)  # try GL_CLAMP/GL_REPEAT/GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) # try GL_LINEAR/GL_NEAREST
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+
+    sx = width/2
+    ex = -sx
+    sz = height/2
+    ez = -sz
+    
+    # Enable/Disable each time or OpenGL ALWAYS expects texturing!
+    glEnable(GL_TEXTURE_2D)
+
+    glBegin(GL_QUADS)
+    glTexCoord2f(0, 0)
+    glVertex3f(sx, 0, sz)
+    glTexCoord2f(0, 1)
+    glVertex3f(sx, 0, ez)
+    glTexCoord2f(1, 1)
+    glVertex3f(ex, 0, ez)
+    glTexCoord2f(1, 0)
+    glVertex3f(ex, 0, sz)
+    glEnd()
+
+    glDisable(GL_TEXTURE_2D)
+
 def place_main_light():
     """Set up the main light."""
     glMatrixMode(GL_MODELVIEW)
@@ -480,7 +554,7 @@ def place_main_light():
     # Create a spotlight effect (none at the moment)
     if use_spotlight:
         glLightf(GL_LIGHT0, GL_SPOT_CUTOFF,45.0)
-        glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0.0)
+        glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 2.0)
         glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction)
     else:
         glLightf(GL_LIGHT0, GL_SPOT_CUTOFF,180.0)
@@ -494,67 +568,27 @@ def place_main_light():
 
     # This part draws a SELF-COLORED sphere (in spot where light is!)
     glPushMatrix()
-    glTranslatef(2,ly,2)
-   #glDisable(GL_LIGHTING)
-    glColor3f(0, 0, brightness)
-    glutSolidSphere(0.5, 20, 20)
-    glEnable(GL_LIGHTING)
-    glPopMatrix()
-
-def place_light0():
-    """Set up light 0."""
-    activeLight = GL_LIGHT0
-    glMatrixMode(GL_MODELVIEW)
-    lx = 0
-    ly = 10
-    lz = 0
-    lightColor = [0.2, 0.2, 1]
-    light_position = [ lx, ly, lz, 1.0 ]
-    light_ambient = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
-    light_diffuse = [ lightColor[0]*brightness, lightColor[1]*brightness, lightColor[2]*brightness, 1.0 ]
-    light_specular = [ lightColor[0]*brightness, lightColor[1]*brightness, lightColor[2]*brightness, 1.0 ]
-    light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
-
-    # For this light, set position, ambient, diffuse, and specular values
-    glLightfv(activeLight, GL_POSITION, light_position)
-    glLightfv(activeLight, GL_AMBIENT, light_ambient)
-    glLightfv(activeLight, GL_DIFFUSE, light_diffuse)
-    glLightfv(activeLight, GL_SPECULAR, light_specular)
-
-    # Constant attenuation (for distance, etc.)
-    # Only works for fixed light locations!  Otherwise disabled
-    glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
-    glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
-    glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
-
-    # Create a spotlight effect (none at the moment)
-    glLightf(activeLight, GL_SPOT_CUTOFF,40.0)
-    glLightf(activeLight, GL_SPOT_EXPONENT, 4.0)
-    glLightfv(activeLight, GL_SPOT_DIRECTION, light_direction)
-    
-    glEnable(activeLight)
-
-    # This part draws a SELF-COLORED sphere (in spot where light is!)
-    glPushMatrix()
-    glTranslatef(lx,ly,lz)
+    glTranslatef(2, ly, 2)
     glDisable(GL_LIGHTING)
-    glColor3fv(lightColor)
+    glColor3f(brightness, brightness, brightness)
     glutSolidSphere(0.5, 20, 20)
     glEnable(GL_LIGHTING)
     glPopMatrix()
 
-def place_light1():
-    """Set up the light 1."""
-    activeLight = GL_LIGHT1
+def place_DeskLight():
+    """Set up the desk light."""
+    activeLight = GL_LIGHT4
     glMatrixMode(GL_MODELVIEW)
     lx = 5
-    ly = 10
-    lz = 0
+    ly = 3.2
+    lz = 5
     light_position = [ lx, ly, lz, 1.0 ]
-    light_ambient = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
-    light_diffuse = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
-    light_specular = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
-    light_direction = [ 3.0, -10.0, 0.0, 0.0 ]  # Light points down (and a little to the right)
+    #White light
+    light_ambient = [ 1*deskBrightness, 1*deskBrightness, 1*deskBrightness, 1.0 ]
+    light_diffuse = [ 1*deskBrightness, 1*deskBrightness, 1*deskBrightness, 1.0 ]
+    light_specular = [ 1*deskBrightness, 1*deskBrightness, 1*deskBrightness, 1.0 ]
+    light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
+    # light_direction = [ 3.0, -10.0, 0.0, 0.0 ]  # Light points down (and a little to the right)
 
     # For this light, set position, ambient, diffuse, and specular values
     glLightfv(activeLight, GL_POSITION, light_position)
@@ -570,32 +604,135 @@ def place_light1():
 
     # Create a spotlight effect (none at the moment)
     glLightf(activeLight, GL_SPOT_CUTOFF,20.0)
-    glLightf(activeLight, GL_SPOT_EXPONENT, 4.0)
+    glLightf(activeLight, GL_SPOT_EXPONENT, 0.0)
     glLightfv(activeLight, GL_SPOT_DIRECTION, light_direction)
-    
+
+    # Create a spotlight effect
+    if is_desk_spotlight_on:
+        glLightf(GL_LIGHT4, GL_SPOT_CUTOFF,45.0)
+        glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 1.0)
+        glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, light_direction)
+    else:
+        glLightf(GL_LIGHT4, GL_SPOT_CUTOFF,0)
+        glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 0.0)
+
     glEnable(activeLight)
 
     # This part draws a SELF-COLORED sphere (in spot where light is!)
     glPushMatrix()
     glTranslatef(lx,ly,lz)
     glDisable(GL_LIGHTING)
-    glColor3f(brightness, brightness, brightness)
+    glColor3f(deskBrightness, deskBrightness, deskBrightness)
+    glutSolidSphere(0.3, 12, 12)
+    glEnable(GL_LIGHTING)
+    glPopMatrix()
+
+def place_RedLight():
+    """Set up red light."""
+    activeLight = GL_LIGHT1
+    glMatrixMode(GL_MODELVIEW)
+    lx = 0
+    ly = 10
+    lz = -9
+    light_position = [ lx, ly, lz, 1.0 ]
+    light_ambient = [ 0.9745 * redBrightness, 0.01175 * redBrightness, 0.01175 * redBrightness, 1.0 ]
+    light_diffuse = [ 0.91424 * redBrightness, 0.04136 * redBrightness, 0.04136 * redBrightness, 1.0 ]
+    light_specular = [ 0.827811 * redBrightness, 0.326959 * redBrightness, 0.326959 * redBrightness, 1.0 ]
+    light_direction = [ 7.0, -10.0, 5.0, 0.0 ]  # Light points down (and a little to the right)
+
+    # For this light, set position, ambient, diffuse, and specular values
+    glLightfv(activeLight, GL_POSITION, light_position)
+    glLightfv(activeLight, GL_AMBIENT, light_ambient)
+    glLightfv(activeLight, GL_DIFFUSE, light_diffuse)
+    glLightfv(activeLight, GL_SPECULAR, light_specular)
+
+    # Constant attenuation (for distance, etc.)
+    # Only works for fixed light locations!  Otherwise disabled
+    glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
+    glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
+    glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
+
+    # Create a spotlight effect
+    if is_red_spotlight_on:
+        glLightf(GL_LIGHT1, GL_SPOT_CUTOFF,45.0)
+        glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 1.0)
+        glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction)
+    else:
+        glLightf(GL_LIGHT1, GL_SPOT_CUTOFF,0)
+        glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 0.0)
+    
+    glEnable(activeLight)
+
+    # Draw RED sphere to represent the light source
+    glPushMatrix()
+    glTranslatef(lx,ly,lz)
+    glDisable(GL_LIGHTING)
+    glColor3f(redBrightness, 0, 0)
     glutSolidSphere(0.5, 20, 20)
     glEnable(GL_LIGHTING)
     glPopMatrix()
 
-def place_light2():
-    """Set up the light 2."""
+def place_GreenLight():
+    """Set up the green light."""
     activeLight = GL_LIGHT2
     glMatrixMode(GL_MODELVIEW)
-    lx = -5
+    lx = 4
     ly = 10
-    lz = 0
+    lz = 5
     light_position = [ lx, ly, lz, 1.0 ]
-    light_ambient = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
-    light_diffuse = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
-    light_specular = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
-    light_direction = [ -3.0, -10.0, 0.0, 0.0 ]  # Light points down
+    #Emerald
+    light_ambient = [ 0.0215 * greenBrightness, 0.7745 * greenBrightness, 0.0215 * greenBrightness, 1.0 ]
+    light_diffuse = [ 0.07568 * greenBrightness, 0.71424 * greenBrightness, 0.07568 * greenBrightness, 1.0 ]
+    light_specular = [ 0.633 * greenBrightness, 0.727811 * greenBrightness, 0.333 * greenBrightness, 1.0 ]
+    light_direction = [ 3.0, -10.0, 0.0, 0.0 ]  # Light points down (and a little to the right)
+    # light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
+
+    # For this light, set position, ambient, diffuse, and specular values
+    glLightfv(activeLight, GL_POSITION, light_position)
+    glLightfv(activeLight, GL_AMBIENT, light_ambient)
+    glLightfv(activeLight, GL_DIFFUSE, light_diffuse)
+    glLightfv(activeLight, GL_SPECULAR, light_specular)
+
+    # Constant attenuation (for distance, etc.)
+    # Only works for fixed light locations!  Otherwise disabled
+    glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
+    glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
+    glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
+
+    # Create a spotlight effect
+    if is_green_spotlight_on:
+        glLightf(GL_LIGHT2, GL_SPOT_CUTOFF,45.0)
+        glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 1.0)
+        glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, light_direction)
+    else:
+        glLightf(GL_LIGHT2, GL_SPOT_CUTOFF,0)
+        glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 0.0)
+    
+    glEnable(activeLight)
+
+    # Draw GREEN sphere to represent the light source
+    glPushMatrix()
+    glTranslatef(lx,ly,lz)
+    glDisable(GL_LIGHTING)
+    glColor3f(0, 1.0*greenBrightness, 0)
+    glutSolidSphere(0.5, 20, 20)
+    glEnable(GL_LIGHTING)
+    glPopMatrix()
+
+def place_BlueLight():
+    """Set up the blue light."""
+    activeLight = GL_LIGHT3
+    glMatrixMode(GL_MODELVIEW)
+    lx = -4
+    ly = 10
+    lz = 5
+    light_position = [ lx, ly, lz, 1.0 ]
+    #Turqouise lighting 
+    light_ambient = [ 0.1 * blueBrightness, 0.18725 * blueBrightness, 0.9745 * blueBrightness, 1.0 ]
+    light_diffuse = [ 0.396 * blueBrightness, 0.24151 * blueBrightness, 0.89102 * blueBrightness, 1.0 ]
+    light_specular = [ 0.297254 * blueBrightness, 0.20829 * blueBrightness, 0.906678 * blueBrightness, 1.0 ]
+    light_direction = [ -2.0, -10.0, 0.0, 0.0 ]  # Light points down (and a little to the right)
+    # light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
 
     # For Light 0, set position, ambient, diffuse, and specular values
     glLightfv(activeLight, GL_POSITION, light_position)
@@ -609,21 +746,58 @@ def place_light2():
     glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
     glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
 
-    # Create a spotlight effect (none at the moment)
-    glLightf(activeLight, GL_SPOT_CUTOFF,20.0)
-    glLightf(activeLight, GL_SPOT_EXPONENT, 4.0)
-    glLightfv(activeLight, GL_SPOT_DIRECTION, light_direction)
-    
+    # Create a spotlight effect
+    if is_blue_spotlight_on:
+        glLightf(GL_LIGHT3, GL_SPOT_CUTOFF,55.0)
+        glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 0.0)
+        glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, light_direction)
+    else:
+        glLightf(GL_LIGHT3, GL_SPOT_CUTOFF,0)
+        glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 0.0)
+        
     glEnable(activeLight)
 
-    # This part draws a SELF-COLORED sphere (in spot where light is!)
+    # Draw BLUE sphere to represent the light source
     glPushMatrix()
     glTranslatef(lx,ly,lz)
     glDisable(GL_LIGHTING)
-    glColor3f(brightness, brightness, brightness)
+    glColor3f(0,0,blueBrightness)
     glutSolidSphere(0.5, 20, 20)
     glEnable(GL_LIGHTING)
     glPopMatrix()
+
+
+def drawPlane(width, height, texture):
+    """ Draw a textured plane of the specified dimension. """
+    glBindTexture(GL_TEXTURE_2D, texture)
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE) # try GL_DECAL/GL_REPLACE/GL_MODULATE
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)           # try GL_NICEST/GL_FASTEST
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)  # try GL_CLAMP/GL_REPEAT/GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) # try GL_LINEAR/GL_NEAREST
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+      
+    # Enable/Disable each time or OpenGL ALWAYS expects texturing!
+    glEnable(GL_TEXTURE_2D)
+   
+    ex = width/2
+    sx = -ex
+    ey = height
+    sy = 0
+    glBegin(GL_QUADS)
+    glNormal3f(0, 0, 1)
+    glTexCoord2f(0, 0)
+    glVertex3f(sx, sy, 0)
+    glTexCoord2f(width/10, 0)
+    glVertex3f(ex, sy, 0)
+    glTexCoord2f(width/10, height/10)
+    glVertex3f(ex, ey, 0)
+    glTexCoord2f(0, height/10)
+    glVertex3f(sx, ey, 0)
+    glEnd()
+   
+    glDisable(GL_TEXTURE_2D)
+
 def set_copper(face):
     """Set the material properties of the given face to "copper"-esque.
 
@@ -668,5 +842,47 @@ def set_PolishedSilver(face):
     glMaterialfv(face, GL_DIFFUSE, diffuse);
     glMaterialfv(face, GL_SPECULAR, specular);
     glMaterialf(face, GL_SHININESS, shininess);
+
+def generateCheckerBoardTexture():
+    """
+    * Generate a texture in the form of a checkerboard
+    * Why?  Simple to do...
+    """
+    global checkerBoardName
+    texture = [0]*(NROWS*NCOLS*4)
+    for i in range(NROWS):
+        for j in range(NCOLS):
+            c = 0 if ((i&8)^(j&8)) else 255
+            idx = (i*NCOLS+j)*4
+            # Black/White Checkerboard
+            texture[idx] = c     # Red
+            texture[idx+1] = c   # Green
+            texture[idx+2] = c   # Blue
+            texture[idx+3] = 180 # Alpha (transparency)
+
+    # Generate a "name" for the texture.  
+    # Bind this texture as current active texture
+    # and sets the parameters for this texture.
+    checkerBoardName = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, checkerBoardName)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, NCOLS, NROWS, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, texture)
+
+def loadImageTexture(filename):
+    # Load the image from the file and return as a texture
+    im = Image.open(filename)
+    print("Image dimensions: {0}".format(im.size))  # If you want to see the image's original dimensions
+    # dim = 128
+    # size = (0,0,dim,dim)
+    # texture = im.crop(size).tobytes("raw")   # The cropped texture
+    texture = im.tobytes("raw")   # The cropped texture
+    dimX = im.size[0]
+    dimY = im.size[1]
+    
+    returnTextureName = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, returnTextureName)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dimX, dimY, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, texture)
+    return returnTextureName
 
 if __name__ == '__main__': main()

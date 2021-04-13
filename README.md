@@ -22,5 +22,11 @@ Camera Movement Controls:
 'x' = Look straight ahead (Set gaze level straight)
 'r' = Go back to starting position
 
+Light:
+'0' = Toggle desk lamp on/off
+'1' = Toggle red light on/off
+'2' = Toggle green light on/off
+'3' = Toggle blue light on/off
+
 EXTRA FEATURES:
 nope. not yet...
