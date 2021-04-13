@@ -128,7 +128,7 @@ def init():
 def display():
     """Display the current scene."""
     # Set the viewport to the full screen.
-    glViewport(0, 0, 2*win_width, 2*win_height) # MAC USERS: Scale width and height by 2
+    glViewport(0, 0, win_width, win_height) # MAC USERS: Scale width and height by 2
 
     camera.setProjection()
     
@@ -378,6 +378,43 @@ def draw_scene():
     glRotated(angle_movement, 0, 1, 0)
     draw_objects()
 
+    
+def draw_table(): 
+    glPushMatrix()
+    glTranslate(-5, 0, 10)   #0, 2, 30
+    glRotated(-90, 1, 0, 0)
+    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
+    gluCylinder(tube, .5, .5, 2,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(0, 0, 10)   #0, 2, 30
+    glRotated(-90, 1, 0, 0)
+    set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
+    gluCylinder(tube, .5, .5, 2,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(0, 0, 7)   #0, 2, 30
+    glRotated(-90, 1, 0, 0)
+    set_pewter(GL_FRONT_AND_BACK)    # Make material attributes mimic pewter
+    gluCylinder(tube, .5, .5, 2,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(-5, 0, 7)   #0, 2, 30
+    glRotated(-90, 1, 0, 0)
+    set_pewter(GL_FRONT_AND_BACK)    # Make material attributes mimic pewter
+    gluCylinder(tube, .5, .5, 2,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslated(-2,2.3, 8)
+    glScaled(1.5, .15, 1) # Stretch body
+# glRotated(45, 0, 0, 1) # Drawing body parallel to x-axis
+    glutSolidCube(5) # Body (Bottom)
+    glPopMatrix()
+
 def draw_objects():
     """Draw the objects in the scene: cylinders, spheres, floor, walls, ceilings."""
     global ROOM_LENGTH, ROOM_WIDTH, ROOM_HEIGHT
@@ -423,56 +460,50 @@ def draw_objects():
 
     # Draw Copper Ball
     glPushMatrix()
-    glTranslate(5, 2, 10)   #0, 2, 30
+    glTranslate(-5, 4.3, 0)   #0, 2, 30
+    glScale(.5,.5,.5)
     set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
     gluSphere(ball, 1.0, 30, 30)
     glPopMatrix()
 
     # Draw Silver Polished Ball
     glPushMatrix()
-    glTranslate(10, 2, 10)   #0, 2, 30
+    glTranslate(-10, 4.3, -0)  
+    glScale(.5,.5,.5)
     set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
     gluSphere(ball, 1.0, 30, 30)
     glPopMatrix()
 
-    # Makes Table
+    #Drawing table
     glPushMatrix()
-    glTranslate(-5, 0, 10)   #0, 2, 30
+    glTranslate(-5, 0, -10)
+    glScale(1.4,1.4,1.4)
+    draw_table()
+    glPopMatrix()
+
+    #Drawing die 1
+    glPushMatrix()
+    glTranslate(-7, 4.3, 5)   
+    glScale(0.2,0.2,0.2)
     glRotated(-90, 1, 0, 0)
-    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
-    gluCylinder(tube, .5, .5, 2,10,10)
+    draw_die()
     glPopMatrix()
 
+    #Drawing die 2
     glPushMatrix()
-    glTranslate(0, 0, 10)   #0, 2, 30
+    glTranslate(-10, 4.3, 5)  
+    glScale(0.2,0.2,0.2)
     glRotated(-90, 1, 0, 0)
-    set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
-    gluCylinder(tube, .5, .5, 2,10,10)
+    glTranslate(0, 2, 0)
+    draw_die()   
     glPopMatrix()
-
+def draw_die():
+     # Draw Dice 
     glPushMatrix()
-    glTranslate(0, 0, 7)   #0, 2, 30
-    glRotated(-90, 1, 0, 0)
-    set_pewter(GL_FRONT_AND_BACK)    # Make material attributes mimic pewter
-    gluCylinder(tube, .5, .5, 2,10,10)
+    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
+    glutSolidCube(1)    
     glPopMatrix()
-
-    glPushMatrix()
-    glTranslate(-5, 0, 7)   #0, 2, 30
-    glRotated(-90, 1, 0, 0)
-    set_pewter(GL_FRONT_AND_BACK)    # Make material attributes mimic pewter
-    gluCylinder(tube, .5, .5, 2,10,10)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslated(-2.5,2.4, 7)
-    glScaled(4.1, 0.5, 0.55) # Stretch body
-    glRotated(45, 0, 0, 1) # Drawing body parallel to x-axis
-    gluCylinder(cube, 1, 1, 6, 4, 1) # Body (Bottom)
-    glPopMatrix()
-
-
-
+    
 def draw_floor(size, divisions=1, f=None, df=None):
     """Draws a floor of a given size and type.
 
