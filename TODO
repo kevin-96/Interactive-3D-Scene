@@ -3,18 +3,18 @@ KEY:
 'X' = Completed
 
 Create Objects:
-- Floor (Textured with checkerboard pattern)
+X Floor (Textured with checkerboard pattern)
 - 4 Walls, 1 Ceiling (All Colored/Textured)
 - Table (Top textured with wood pattern)
 - Desk Lamp
-- Copper Ball
-- Polished Silver Ball
+X Copper Ball
+X Polished Silver Ball
 - Pair of Dice (with texture-mapped dots)
 - Textured picture on the wall (when lights are off)
 
 Create Light Sources:
-- 3 Overhead Lights (1 Red, 1 Green, 1 Blue) on the ceiling (Draw a colored ball to represent the light source position/color)
-- Desk Lamp Light (Dim white light, about 75% intensity)
+X 3 Overhead Lights (1 Red, 1 Green, 1 Blue) on the ceiling (Draw a colored ball to represent the light source position/color)
+X Desk Lamp Light (Dim white light, about 75% intensity)
 - Bright (white) spotlight/flashlight from the camera's view (30 degrees)
 
 Navigation (Functionality):
@@ -28,8 +28,8 @@ X (SET KEYSTROKE): Button to level the camera's gaze (look DIRECTLY AHEAD, not u
 
 Other functionality:
 X 'h': prints a help message in the console (Text from help.txt)
-- 0-4: Turns off one of each of the lights (There are 5 lights total, see light sources above)
-    *** When all lights (except camera flashlight) are off, the textured picture on the wall appears ***
+X 0-4: Turns off one of each of the lights (There are 5 lights total, see light sources above)
+    - When all lights (except camera flashlight) are off, the textured picture on the wall appears ***
 - (SET KEYSTROKE): The Copper Ball rolls around (in a circle) on the table top. Pressing same button stops the movement (Animation)
 - (SET KEYSTROKE): The Polished Silver Ball rolls around (in a circle) on the table top. Pressing same button stops the movement (Animation)
 - (SET KEYSTROKE): The dice animate (roll or spin) for a few seconds and then stop
