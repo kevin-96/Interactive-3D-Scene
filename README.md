@@ -29,5 +29,13 @@ Light:
 '3' = Toggle blue light on/off
 '4' = Toggle camera flashlight on/off
 
+Animation:
+
+Debug Controls:
+'o' = Camera Ascend
+'p' = Camera Descend
+'l' = Toggle main light on/off
+'.' = Toggle main light spotlight on/off
+
 EXTRA FEATURES:
 nope. not yet...

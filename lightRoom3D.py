@@ -35,7 +35,7 @@ CAM_ANGLE = 60.0
 INITIAL_EYE = Point(12, 7, 13)
 START_EYE = Point(12, 7, 13) # Used to reset starting position of camera (Not in constructor)
 INITIAL_LOOK_ANGLE = 45 # Initally, look to the left
-INITIAL_TILT_ANGLE = 0 # Looking straight ahead
+INITIAL_TILT_ANGLE = 0 # Initially, look straight ahead
 camera = Camera(CAM_ANGLE, win_width/win_height, CAM_NEAR, CAM_FAR, INITIAL_EYE, INITIAL_LOOK_ANGLE, INITIAL_TILT_ANGLE)
 
 # These parameters define simple animation properties
@@ -45,13 +45,11 @@ DEFAULT_STEP = 0.001
 angle_step = 0.1
 angle_movement = 45
 rgb_light_height = 15
-light_height = 16
-light_height_dy = 0.05
 LIGHT_TOP = 30
 LIGHT_BOTTOM = -5
 time = 0
 brightness = 1.0 # Default spotlight brightness
-deskBrightness=0.75 # Desk lamp (spotlight)
+deskBrightness= 0.75 # Desk lamp (spotlight)
 redBrightness = 1.0 # Red spotlight
 blueBrightness = 1.0 # Blue spotlight
 greenBrightness = 1.0 # Green spotlight
@@ -362,24 +360,14 @@ def keyboard(key, x, y):
     #     global use_lv
     #     use_lv = GL_FALSE if use_lv == GL_TRUE else GL_TRUE
     #     glutPostRedisplay()
-
-    elif key == b'4':
-        brightness = brightness * 0.9
-        glutPostRedisplay()
-    elif key == b'5':
-        brightness = brightness / 0.9
-        if brightness > 1.0:
-            brightness = 1.0
-        glutPostRedisplay()
-    elif key == b'-':
-        # Move light down
-        global light_height
-        light_height -= light_height_dy
-        glutPostRedisplay()
-    elif key == b'+':
-        # Move light up
-        light_height += light_height_dy
-        glutPostRedisplay()
+    # elif key == b'4':
+    #     brightness = brightness * 0.9
+    #     glutPostRedisplay()
+    # elif key == b'5':
+    #     brightness = brightness / 0.9
+    #     if brightness > 1.0:
+    #         brightness = 1.0
+    #     glutPostRedisplay()
 
 def reshape(w, h):
     """Handle window reshaping events."""
@@ -398,10 +386,15 @@ def draw_scene():
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb)
 
     # Placing each light
-    place_GreenLight()
     place_RedLight()
+    place_GreenLight()
     place_BlueLight()
+
+    glPushMatrix()
+    glTranslated(0, 5, 0) # Moving the desk lamp light
     place_DeskLight()
+    glPopMatrix()
+
     place_FlashLight()
 
     # Set up the main light (LIGHT0)... or not.
@@ -636,7 +629,7 @@ def place_main_light():
     """Set up the main light."""
     glMatrixMode(GL_MODELVIEW)
     lx = 3.0
-    ly = light_height
+    ly = rgb_light_height
     lz = 1.0
     light_position = [ lx, ly, lz, 1.0 ]
     light_ambient = [ 1*brightness, 1*brightness, 1*brightness, 1.0 ]
@@ -681,19 +674,18 @@ def place_main_light():
     glPopMatrix()
 
 def place_DeskLight():
-    """Set up the desk light."""
+    """Set up the desk light (lamp)."""
     activeLight = GL_LIGHT4
     glMatrixMode(GL_MODELVIEW)
     lx = 5
-    ly = 3.2
+    ly = 5
     lz = 5
-    light_position = [ lx, ly, lz, 1.0 ]
-    #White light
+    light_position = [ lx, ly, lz, 0.5 ]
+    # White light
     light_ambient = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
     light_diffuse = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
     light_specular = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
     light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
-    # light_direction = [ 3.0, -10.0, 0.0, 0.0 ]  # Light points down (and a little to the right)
 
     # For this light, set position, ambient, diffuse, and specular values
     glLightfv(activeLight, GL_POSITION, light_position)
@@ -706,11 +698,6 @@ def place_DeskLight():
     glLightf(activeLight, GL_CONSTANT_ATTENUATION, 1.0)
     glLightf(activeLight, GL_LINEAR_ATTENUATION, 0.0)
     glLightf(activeLight, GL_QUADRATIC_ATTENUATION, 0.000)
-
-    # Create a spotlight effect (none at the moment)
-    glLightf(activeLight, GL_SPOT_CUTOFF, 20.0)
-    glLightf(activeLight, GL_SPOT_EXPONENT, 0.0)
-    glLightfv(activeLight, GL_SPOT_DIRECTION, light_direction)
 
     # Create a spotlight effect
     if is_desk_spotlight_on:
@@ -728,7 +715,7 @@ def place_DeskLight():
     glTranslatef(lx, ly, lz)
     glDisable(GL_LIGHTING)
     glColor3f(deskBrightness, deskBrightness, deskBrightness)
-    glutSolidSphere(0.3, 12, 12)
+    glutSolidSphere(0.3, 7, 7)
     glEnable(GL_LIGHTING)
     glPopMatrix()
 
@@ -739,7 +726,7 @@ def place_RedLight():
     lx = 0
     ly = rgb_light_height
     lz = -9
-    light_position = [ lx, ly, lz, 1.0 ]
+    light_position = [ lx, ly, lz, 0.8 ]
     light_ambient = [ 0.9745 * redBrightness, 0.01175 * redBrightness, 0.01175 * redBrightness, 1.0 ]
     light_diffuse = [ 0.91424 * redBrightness, 0.04136 * redBrightness, 0.04136 * redBrightness, 1.0 ]
     light_specular = [ 0.827811 * redBrightness, 0.326959 * redBrightness, 0.326959 * redBrightness, 1.0 ]
@@ -784,13 +771,12 @@ def place_GreenLight():
     lx = 4
     ly = rgb_light_height
     lz = 5
-    light_position = [ lx, ly, lz, 1.0 ]
+    light_position = [ lx, ly, lz, 0.8 ]
     #Emerald
     light_ambient = [ 0.0215 * greenBrightness, 0.7745 * greenBrightness, 0.0215 * greenBrightness, 1.0 ]
     light_diffuse = [ 0.07568 * greenBrightness, 0.71424 * greenBrightness, 0.07568 * greenBrightness, 1.0 ]
     light_specular = [ 0.633 * greenBrightness, 0.727811 * greenBrightness, 0.333 * greenBrightness, 1.0 ]
     light_direction = [ 3.0, -10.0, 0.0, 0.0 ]  # Light points down (and a little to the right)
-    # light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
 
     # For this light, set position, ambient, diffuse, and specular values
     glLightfv(activeLight, GL_POSITION, light_position)
@@ -806,7 +792,7 @@ def place_GreenLight():
 
     # Create a spotlight effect
     if is_green_spotlight_on:
-        glLightf(GL_LIGHT2, GL_SPOT_CUTOFF,45.0)
+        glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 45.0)
         glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 1.0)
         glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, light_direction)
     else:
@@ -819,7 +805,7 @@ def place_GreenLight():
     glPushMatrix()
     glTranslatef(lx,ly,lz)
     glDisable(GL_LIGHTING)
-    glColor3f(0, 1.0*greenBrightness, 0)
+    glColor3f(0, 1.0 * greenBrightness, 0)
     glutSolidSphere(0.5, 20, 20)
     glEnable(GL_LIGHTING)
     glPopMatrix()
@@ -831,7 +817,7 @@ def place_BlueLight():
     lx = -4
     ly = rgb_light_height
     lz = 5
-    light_position = [ lx, ly, lz, 1.0 ]
+    light_position = [ lx, ly, lz, 0.8 ]
     # Bluelighting 
     light_ambient = [ 0.1 * blueBrightness, 0.18725 * blueBrightness, 0.9745 * blueBrightness, 1.0 ]
     light_diffuse = [ 0.396 * blueBrightness, 0.24151 * blueBrightness, 0.89102 * blueBrightness, 1.0 ]
@@ -854,7 +840,7 @@ def place_BlueLight():
     # Create a spotlight effect
     if is_blue_spotlight_on:
         glLightf(GL_LIGHT3, GL_SPOT_CUTOFF,55.0)
-        glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 0.0)
+        glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 1.0)
         glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, light_direction)
     else:
         glLightf(GL_LIGHT3, GL_SPOT_CUTOFF,0)
@@ -883,7 +869,8 @@ def place_FlashLight():
     light_ambient = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
     light_diffuse = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
     light_specular = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
-    light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
+    light_direction = [ 0.0, -1.0, 2.0, 0.0 ]  # Light points down
+    # TODO: Make flashlight turn with camera (yaw)
 
     # For Light 0, set position, ambient, diffuse, and specular values
     glLightfv(activeLight, GL_POSITION, light_position)
@@ -900,7 +887,7 @@ def place_FlashLight():
     # Create a spotlight effect
     if is_flash_spotlight_on:
         glLightf(GL_LIGHT5, GL_SPOT_CUTOFF,30.0)
-        glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 1.0)
+        glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 4.0)
         glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, light_direction)
     else:
         glLightf(GL_LIGHT5, GL_SPOT_CUTOFF,0)
