@@ -133,7 +133,7 @@ def init():
 def display():
     """Display the current scene."""
     # Set the viewport to the full screen.
-    glViewport(0, 0, 2*win_width, 2*win_height) # MAC USERS: Scale width and height by 2
+    glViewport(0, 0, win_width, win_height) # MAC USERS: Scale width and height by 2
 
     camera.setProjection()
     
@@ -452,7 +452,7 @@ def draw_objects():
 
     # Draw Copper Ball
     glPushMatrix()
-    glTranslate(-5, 4.3, 0)   #0, 2, 30
+    glTranslate(-5, 4.3, 2)   #0, 2, 30
     glScale(.5,.5,.5)
     set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
     gluSphere(ball, 1.0, 30, 30)
@@ -460,7 +460,7 @@ def draw_objects():
 
     # Draw Silver Polished Ball
     glPushMatrix()
-    glTranslate(-10, 4.3, -0)  
+    glTranslate(-10, 4.3, 0)  
     glScale(.5,.5,.5)
     set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
     gluSphere(ball, 1.0, 30, 30)
@@ -473,6 +473,13 @@ def draw_objects():
     draw_table()
     glPopMatrix()
 
+    glPushMatrix()
+    glRotated(-90, 1, 0, 0)
+    glTranslate(-3.4,-1,3.8)  #for some reason the y coordinate is where the z should be
+    #glTranslate(-5,0,-10)
+    draw_DeskLamp()
+   
+    glPopMatrix()
     # Draw die 1
     glPushMatrix()
     glTranslate(-7, 4.3, 5)   
@@ -488,6 +495,34 @@ def draw_objects():
     glRotated(-90, 1, 0, 0)
     glTranslate(0, 2, 0)
     draw_die()   
+    glPopMatrix()
+
+def draw_DeskLamp(): 
+     #Draws base of lamp
+    glPushMatrix() 
+    glutSolidCylinder(1,.5,10,10)
+    glPopMatrix()
+#arm of the lamp
+    glPushMatrix()
+    glutSolidCylinder(.1,3.05,50,50)
+    glPopMatrix()
+    #Neck of the lamp
+    glPushMatrix()
+    glTranslate(0,.09,3)
+    glRotated(90, 1, 0, 0)
+    glutSolidCylinder(.1,2.5,50,50)
+    glPopMatrix()
+#light hood
+    glPushMatrix()
+    glTranslate(0,-2.5,2.3)
+    glRotated(90, 0, 0, 1)
+    gluCylinder(tube, .5, .5, 1,10,10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslate(0,-2.5,3.3)
+    glRotated(90, 0, 0, 1)
+    glutSolidCylinder(.5,0.01,10,10)
     glPopMatrix()
 
 def draw_table(): 
@@ -677,9 +712,9 @@ def place_DeskLight():
     """Set up the desk light (lamp)."""
     activeLight = GL_LIGHT4
     glMatrixMode(GL_MODELVIEW)
-    lx = 5
-    ly = 5
-    lz = 5
+    lx = -3.3
+    ly = 1.7
+    lz = 3.6
     light_position = [ lx, ly, lz, 0.5 ]
     # White light
     light_ambient = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
