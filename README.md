@@ -20,7 +20,9 @@ Camera Movement Controls:
 'z' = Look down
 'c' = Look up
 'x' = Look straight ahead (Set gaze level straight)
-'r' = Go back to starting position
+'t' = Go back to starting position
+'+' = Ascend (DEBUG)
+'-' = Descend (DEBUG)
 
 Light:
 '0' = Toggle desk lamp on/off
@@ -28,14 +30,17 @@ Light:
 '2' = Toggle green light on/off
 '3' = Toggle blue light on/off
 '4' = Toggle camera flashlight on/off
+'5' = Toggle main light on/off (DEBUG) - see the entire room lit up
+'6' = Toggle main light spotlight on/off (DEBUG)
 
 Animation:
-
-Debug Controls:
-'o' = Camera Ascend
-'p' = Camera Descend
-'l' = Toggle main light on/off
-'.' = Toggle main light spotlight on/off
+'j' = Toggle rolling copper ball on/off
+'k' = Toggle rolling silver ball on/off
+'l' = Toggle dice animation (can't press button again until animation ends)
 
 EXTRA FEATURES:
-nope. not yet...
+'r' = (Yaw) Turn 180 degrees - Don't waste time pressing 'q' or 'e' repeatedly :)
+
+NOTES:
+
+- Camera flashlight can be toggled on/off and it moves up, down, left, and right. Unfortunately, at the moment it doesn't turn with the camera's horizontal look angle (yaw). It points in the -z direction only.

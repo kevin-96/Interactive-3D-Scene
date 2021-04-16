@@ -47,13 +47,22 @@ angle_movement = 45
 rgb_light_height = 15
 LIGHT_TOP = 30
 LIGHT_BOTTOM = -5
-time = 0
 brightness = 1.0 # Default spotlight brightness
 deskBrightness= 0.75 # Desk lamp (spotlight)
 redBrightness = 1.0 # Red spotlight
 blueBrightness = 1.0 # Blue spotlight
 greenBrightness = 1.0 # Green spotlight
 flashBrightness = 1.0 # Flashlight spotlight
+
+# Object animation variables
+diceAngle = 0 # Dice rotation (about y-axis). Never resets.
+diceAngleD = 10 # Amount the dice rotates per frame
+diceAngleTotal = 0 # Keeps track of total rotation amount on the dice. Will reset at end of animation
+diceAngleLimit = 1000 # How much the dice can rotate at a time before the dice animation stops.
+copperBallAngle = 0 # Ball rotation angle (about y-axis). Initially 0.
+copperBallAngleD = 5 # Amount the copper ball rotates per frame
+silverBallAngle = 0 # Ball rotation angle (about y-axis). Initially 0.
+silverBallAngleD = 8 # Amount the silver ball rotates per frame
 
 # Checkerboard dimensions (texture dimensions are powers of 2)
 NROWS = 64
@@ -73,17 +82,19 @@ BOUND_Z_MAX = 14.9
 BOUND_Z_MIN = -14.9
 
 # These parameters are flags that can be turned on and off (for effect)
-animate = False
-fire = False
-is_light_on = True
-is_desk_spotlight_on=True
-is_red_spotlight_on=True
-is_blue_spotlight_on=True
-is_green_spotlight_on=True
-is_flash_spotlight_on=True
+animateCopperBall = False
+animateSilverBall = False
+animateDice = False
+is_light_on = False
+use_spotlight = False
+is_desk_spotlight_on = True
+is_red_spotlight_on = True
+is_blue_spotlight_on = True
+is_green_spotlight_on = True
+is_flash_spotlight_on = True
+is_textured_picture_on = False
 exiting = False
 use_smooth = True
-use_spotlight = True
 use_lv = GL_FALSE
 
 def main():
@@ -110,7 +121,7 @@ def main():
 
 def init():
     """Perform basic OpenGL initialization."""
-    global tube, ball, cube, brickTextureName, ceilingTextureName, woodTextureName, checkerboardTextureName
+    global tube, ball, cube, brickTextureName, ceilingTextureName, woodTextureName, checkerboardTextureName, secretPictureTextureName, die1TextureName, die2TextureName, die3TextureName, die4TextureName, die5TextureName, die6TextureName
     tube = gluNewQuadric()
     gluQuadricDrawStyle(tube, GLU_FILL)
     ball = gluNewQuadric()
@@ -122,8 +133,15 @@ def init():
     generateCheckerBoardTexture()
     brickTextureName = loadImageTexture("textures/brickWall.jpg")
     ceilingTextureName = loadImageTexture("textures/ceiling.jpg")
-    woodTextureName = loadImageTexture("textures/wood.png")
+    woodTextureName = loadImageTexture("textures/wood2-crop.jpg")
     checkerboardTextureName = loadImageTexture("textures/checkerboard.png")
+    secretPictureTextureName = loadImageTexture("textures/yes.jpg")
+    die1TextureName = loadImageTexture("textures/dice/face1.jpg")
+    die2TextureName = loadImageTexture("textures/dice/face2.jpg")
+    die3TextureName = loadImageTexture("textures/dice/face3.jpg")
+    die4TextureName = loadImageTexture("textures/dice/face4.jpg")
+    die5TextureName = loadImageTexture("textures/dice/face5.jpg")
+    die6TextureName = loadImageTexture("textures/dice/face6.jpg")
   
     # Set up lighting and depth-test
     glEnable(GL_LIGHTING)
@@ -133,7 +151,7 @@ def init():
 def display():
     """Display the current scene."""
     # Set the viewport to the full screen.
-    glViewport(0, 0, win_width, win_height) # MAC USERS: Scale width and height by 2
+    glViewport(0, 0, 2*win_width, 2*win_height) # MAC USERS: Scale width and height by 2
 
     camera.setProjection()
     
@@ -161,27 +179,45 @@ def timer(alarm):
             glutLeaveMainLoop()
         glutPostRedisplay()
         
-    if animate:
+    if animateCopperBall:
         # Advance to the next frame.
-        advance()
+        advanceCopperBall()
         glutPostRedisplay()
 
-def advance():
-    """Advance the scene one frame."""
-    global angle_movement, bullet_distance, fire, time
-    time += 1
-    angle_movement += angle_step
-    if angle_movement >= 360:
-        angle_movement -= 360   # So angle doesn't get too large.
-    elif angle_movement < 0:
-        angle_movement += 360   # So angle doesn't get too small.
+    if animateSilverBall:
+        # Advance to the next frame.
+        advanceSilverBall()
+        glutPostRedisplay()
 
-    # Move the bullet - if fired.
-    if fire:
-        bullet_distance += BULLET_SPEED
-        if bullet_distance > CAM_FAR:
-            bullet_distance = 0
-            fire = False
+    if animateDice:
+        # Advance to the next frame.
+        advanceDice()
+        glutPostRedisplay()
+
+# Animations for the ball and dice objects in the scene
+def advanceCopperBall():
+    """Advance the scene one frame."""
+    global copperBallAngle, copperBallAngleD
+    copperBallAngle += copperBallAngleD
+
+def advanceSilverBall():
+    """Advance the scene one frame."""
+    global silverBallAngle, silverBallAngleD
+    silverBallAngle += silverBallAngleD
+
+def advanceDice():
+    """Advance the scene one frame."""
+    global diceAngle, diceAngleD, diceAngleTotal, diceAngleLimit, animateDice
+    if (diceAngleTotal >= diceAngleLimit):
+        # When angle rotation limit is met, stop the animation and reset diceAngleTotal
+        # print("Dice animation stopped!") # Debug
+        diceAngleTotal = 0 # Reset at the end of animation
+        animateDice = False # Stops the dice animation from running
+    else:
+        # Else, let the dice animate
+        diceAngle += diceAngleD
+        diceAngleTotal += diceAngleD
+
 
 # Check if the camera meets the room's boundaries
 def checkBounds():
@@ -197,6 +233,13 @@ def checkBounds():
         camera.eye.z = BOUND_Z_MAX
     elif camera.eye.z <= BOUND_Z_MIN:
         camera.eye.z = BOUND_Z_MIN
+
+def texturedPictureCheck():
+    if (not is_red_spotlight_on and not is_green_spotlight_on and not is_blue_spotlight_on and not is_desk_spotlight_on and is_flash_spotlight_on):
+        is_textured_picture_on = True
+        draw_Textured_Picture()
+    else:
+        is_textured_picture_on = False
         
 def special_keys(key, x, y):
     """Process any special keys that are pressed."""
@@ -208,14 +251,23 @@ def special_keys(key, x, y):
 
 def keyboard(key, x, y):
     """Process any regular keys that are pressed."""
-    global brightness, redBrightness, greenBrightness, blueBrightness, deskBrightness
+    global brightness, redBrightness, greenBrightness, blueBrightness, deskBrightness, animateDice
     if ord(key) == 27:  # ASCII code 27 = ESC-key
         global exiting
         exiting = True
-    elif key == b' ':
-        global animate
-        animate = not animate
-
+    # Animation Controls
+    elif key == b'j':
+        # Copper ball rolls in a circle
+        global animateCopperBall
+        animateCopperBall = not animateCopperBall
+    elif key == b'k':
+        # Silver ball rolls in a circle
+        global animateSilverBall
+        animateSilverBall = not animateSilverBall
+    elif (key == b'l') and (animateDice == False):
+        # Pair of dice spin in place (and eventually stop)
+        animateDice = not animateDice
+    # Camera Controls
     elif key == b'w':
         # Move forward
         camera.slide(0, 0, -2)
@@ -245,6 +297,10 @@ def keyboard(key, x, y):
         # Turn camera right
         camera.turn(-3)
         glutPostRedisplay()
+    elif key == b'r':
+        # Turn camera 180 degrees
+        camera.turn(180)
+        glutPostRedisplay()
     elif key == b'z':
         # Tilt camera down
         camera.tilt(-3)
@@ -257,7 +313,7 @@ def keyboard(key, x, y):
         # Level gaze (straight ahead)
         camera.levelTilt()
         glutPostRedisplay()
-    elif key == b'r':
+    elif key == b't':
         # Set camera back to starting position
         # print(INITIAL_EYE) # DEBUGGING
         camera.setPosition(START_EYE)
@@ -266,108 +322,89 @@ def keyboard(key, x, y):
         # Print help message (console)
         file = open("help.txt", "r")
         print(file.read())
-
-    elif key == b'o':
+    elif key == b'-':
         # Go down (DEBUGGING)
-        camera.slide(0, -1, 0)
+        camera.slide(0, -0.8, 0)
         checkBounds() # Check if camera hits bounds
         glutPostRedisplay()
-    elif key == b'p':
+    elif key == b'+':
         # Go up (DEBUGGING)
-        camera.slide(0, 1, 0)
+        camera.slide(0, 0.8, 0)
         checkBounds() # Check if camera hits bounds
         glutPostRedisplay()
 
-    # TODO: Get rid of fire (or swap out for different animation)
-    elif key == b'f':
-        global fire
-        fire = True
-
-    elif key == b'l':
+    # Light Controls
+    elif key == b'0':
+        # Toggle desk lamp light source
+        global is_desk_spotlight_on
+        if is_desk_spotlight_on == True:
+            is_desk_spotlight_on = False
+            deskBrightness = 0.0
+            glutPostRedisplay()
+        elif is_desk_spotlight_on == False:
+            deskBrightness = 1.0
+            is_desk_spotlight_on = True
+            glutPostRedisplay()
+        texturedPictureCheck()
+    elif key == b'1':
+        # Toggle red light source
+        global is_red_spotlight_on
+        if is_red_spotlight_on == True:
+            is_red_spotlight_on = False
+            redBrightness = 0.0
+            glutPostRedisplay()
+        elif is_red_spotlight_on == False:
+            redBrightness = 1.0
+            is_red_spotlight_on = True
+            glutPostRedisplay()
+        texturedPictureCheck()
+    elif key == b'2':
+        # Toggle green light source
+        global is_green_spotlight_on
+        if is_green_spotlight_on == True:
+            is_green_spotlight_on = False
+            greenBrightness = 0.0
+            glutPostRedisplay()
+        elif is_green_spotlight_on == False:
+            greenBrightness = 1.0
+            is_green_spotlight_on = True
+            glutPostRedisplay()
+        texturedPictureCheck()
+    elif key == b'3':
+        # Toggle blue light source
+        global is_blue_spotlight_on
+        if is_blue_spotlight_on == True:
+            is_blue_spotlight_on = False
+            blueBrightness = 0.0
+            glutPostRedisplay()
+        elif is_blue_spotlight_on == False:
+            blueBrightness = 1.0
+            is_blue_spotlight_on = True
+            glutPostRedisplay()
+        texturedPictureCheck()
+    elif key == b'4':
+        # Toggle blue light source
+        global is_flash_spotlight_on
+        if is_flash_spotlight_on == True:
+            is_flash_spotlight_on = False
+            flashBrightness = 0.0
+            glutPostRedisplay()
+        elif is_flash_spotlight_on == False:
+            flashBrightness = 1.0
+            is_flash_spotlight_on = True
+            glutPostRedisplay()
+        texturedPictureCheck()
+    elif key == b'5':
         # Turn default light (DEBUGGING)
         global is_light_on
         is_light_on = not is_light_on
         glutPostRedisplay()
-
-    elif key == b'0':
-        # Toggle desk lamp light source
-        global is_desk_spotlight_on
-        if is_desk_spotlight_on ==True:
-            is_desk_spotlight_on=False
-            deskBrightness=0.0
-            glutPostRedisplay()
-        elif  is_desk_spotlight_on ==False:
-            deskBrightness=1.0
-            is_desk_spotlight_on=True
-            glutPostRedisplay()
-    elif key == b'1':
-        # Toggle red light source
-        global is_red_spotlight_on
-        if is_red_spotlight_on ==True:
-            is_red_spotlight_on=False
-            redBrightness=0.0
-            glutPostRedisplay()
-        elif  is_red_spotlight_on ==False:
-            redBrightness=1.0
-            is_red_spotlight_on=True
-            glutPostRedisplay()
-    elif key == b'2':
-        # Toggle green light source
-        global is_green_spotlight_on
-        if is_green_spotlight_on ==True:
-            is_green_spotlight_on=False
-            greenBrightness=0.0
-            glutPostRedisplay()
-        elif  is_green_spotlight_on ==False:
-            greenBrightness=1.0
-            is_green_spotlight_on=True
-            glutPostRedisplay()
-    elif key == b'3':
-        # Toggle blue light source
-        global is_blue_spotlight_on
-        if is_blue_spotlight_on ==True:
-            is_blue_spotlight_on=False
-            blueBrightness=0.0
-            glutPostRedisplay()
-        elif is_blue_spotlight_on ==False:
-            blueBrightness=1.0
-            is_blue_spotlight_on=True
-            glutPostRedisplay()
-    elif key == b'4':
-        # Toggle blue light source
-        global is_flash_spotlight_on
-        if is_flash_spotlight_on ==True:
-            is_flash_spotlight_on=False
-            flashBrightness=0.0
-            glutPostRedisplay()
-        elif is_flash_spotlight_on ==False:
-            flashBrightness=1.0
-            is_flash_spotlight_on=True
-            glutPostRedisplay()
-
-    # elif key == b'1':
-    #     global use_smooth
-    #     use_smooth = not use_smooth
-    #     glutPostRedisplay()
-
-    elif key == b'.':
+        texturedPictureCheck()
+    elif key == b'6':
         # Toggle default light spotlight (DEBUGGING)
         global use_spotlight
         use_spotlight = not use_spotlight
         glutPostRedisplay()
-
-    # elif key == b'3':
-    #     global use_lv
-    #     use_lv = GL_FALSE if use_lv == GL_TRUE else GL_TRUE
-    #     glutPostRedisplay()
-    # elif key == b'4':
-    #     brightness = brightness * 0.9
-    #     glutPostRedisplay()
-    # elif key == b'5':
-    #     brightness = brightness / 0.9
-    #     if brightness > 1.0:
-    #         brightness = 1.0
-    #     glutPostRedisplay()
 
 def reshape(w, h):
     """Handle window reshaping events."""
@@ -448,75 +485,172 @@ def draw_objects():
     glRotated(90, 0, 1, 0)
     drawPlane(ROOM_WIDTH, ROOM_HEIGHT, brickTextureName) # Wall 4
     glPopMatrix()
-    
+
+    # Draw Textured Picture on the wall (appears when only camera flashlight is on)
+    glPushMatrix()
+    glTranslate(0, 11, -14.8)
+    glRotated(180, 1, 0, 0)
+    texturedPictureCheck() # The picture appears based on the flag checks for the lights
+    glPopMatrix()
+
+    # Draw table
+    glPushMatrix()
+    glTranslate(-2, 0, -8)
+    glScale(1.0, 1.0, 1.3)
+    draw_table()
+    glPopMatrix()
+
+    # # Draw Desk Lamp (Doesn't display on Mac computer, but works on Windows)
+    # glPushMatrix()
+    # glRotated(-90, 1, 0, 0)
+    # glTranslate(-3.4,-1,3.8)  # for some reason the y coordinate is where the z should be
+    # draw_DeskLamp()
+    # glPopMatrix()
 
     # Draw Copper Ball
     glPushMatrix()
-    glTranslate(-5, 4.3, 2)   #0, 2, 30
-    glScale(.5,.5,.5)
+    glTranslate(-5, 2.7, 2)   #0, 2, 30
+    glScale(0.2, 0.2, 0.2)
+    glRotated(copperBallAngle, 0, 1, 0)
+    glTranslate(3, 0, 0) # Causes the ball to roll away from the y-axis
     set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
     gluSphere(ball, 1.0, 30, 30)
     glPopMatrix()
 
     # Draw Silver Polished Ball
     glPushMatrix()
-    glTranslate(-10, 4.3, 0)  
-    glScale(.5,.5,.5)
+    glTranslate(-4, 2.7, 6)  
+    glScale(0.2, 0.2, 0.2)
+    glRotated(silverBallAngle, 0, 1, 0)
+    glTranslate(5, 0, 0) # Causes the ball to roll away from the y-axis
     set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
     gluSphere(ball, 1.0, 30, 30)
     glPopMatrix()
 
-    # Draw table
-    glPushMatrix()
-    glTranslate(-5, 0, -10)
-    glScale(1.4,1.4,1.4)
-    draw_table()
-    glPopMatrix()
-
-    glPushMatrix()
-    glRotated(-90, 1, 0, 0)
-    glTranslate(-3.4,-1,3.8)  #for some reason the y coordinate is where the z should be
-    #glTranslate(-5,0,-10)
-    draw_DeskLamp()
-   
-    glPopMatrix()
     # Draw die 1
     glPushMatrix()
-    glTranslate(-7, 4.3, 5)   
-    glScale(0.2,0.2,0.2)
-    glRotated(-90, 1, 0, 0)
+    glTranslate(0.5, 2.5, 5)
+    glScale(0.6, 0.6, 0.6)
+    glRotated(20 + diceAngle, 0, 1, 0) # Starts off slightly rotated
     draw_die()
     glPopMatrix()
 
     # Draw die 2
     glPushMatrix()
-    glTranslate(-10, 4.3, 5)  
-    glScale(0.2,0.2,0.2)
+    glTranslate(0.8, 2.5, 3.3)
+    glScale(0.6, 0.6, 0.6)
+    glRotated(110 + diceAngle, 0, 1, 0) # Starts off slightly rotated
+    draw_die()
+    glPopMatrix()
+
+
+def draw_table():
+    # Draws the entire table (legs + table top)
+
+    # Draw Leg 1 (Southwest)
+    glPushMatrix()
+    glTranslate(-5, 0, 11)
     glRotated(-90, 1, 0, 0)
-    glTranslate(0, 2, 0)
-    draw_die()   
+    set_PolishedSilver(GL_FRONT_AND_BACK)   # Silver leg
+    gluCylinder(tube, 0.5, 0.5, 2, 10, 10)
+    glPopMatrix()
+
+    # Draw Leg 2 (Northwest)
+    glPushMatrix()
+    glTranslate(-5, 0, 7)
+    glRotated(-90, 1, 0, 0)
+    set_pewter(GL_FRONT_AND_BACK)   # Pewter leg
+    gluCylinder(tube, 0.5, 0.5, 2, 10, 10)
+    glPopMatrix()
+
+    # Draw Leg 3 (Southeast)
+    glPushMatrix()
+    glTranslate(3, 0, 11)
+    glRotated(-90, 1, 0, 0)
+    set_copper(GL_FRONT_AND_BACK)   # Copper leg
+    gluCylinder(tube, 0.5, 0.5, 2, 10, 10)
+    glPopMatrix()
+
+    # Draw Leg 4 (Northeast)
+    glPushMatrix()
+    glTranslate(3, 0, 7)
+    glRotated(-90, 1, 0, 0)
+    set_pewter(GL_FRONT_AND_BACK)   # Pewter leg
+    gluCylinder(tube, 0.5, 0.5, 2, 10, 10)
+    glPopMatrix()
+
+    # Draw table top
+    glPushMatrix()
+    glTranslate(-0.8, -2.5, 6)
+    draw_table_top()
+    glPopMatrix()
+
+def draw_table_top():
+    # Draw the table top (Using 6 faces/planes)
+
+    # Top face
+    glPushMatrix()
+    glTranslate(0, 5, 0)
+    glRotated(90, 1, 0, 0)
+    drawPlane(9.5, 6, woodTextureName)
+    glPopMatrix()
+
+    # Bottom face
+    glPushMatrix()
+    glTranslate(0, 4.5, 0)
+    glRotated(90, 1, 0, 0)
+    drawPlane(9.5, 6, woodTextureName)
+    glPopMatrix()
+
+    # North side face (-z direction)
+    glPushMatrix()
+    glTranslate(0, 4.5, 0)
+    drawPlane(9.5, 0.5, woodTextureName)
+    glPopMatrix()
+
+    # South side face (+z direction)
+    glPushMatrix()
+    glTranslate(0, 4.5, 6)
+    drawPlane(9.5, 0.5, woodTextureName)
+    glPopMatrix()
+
+    # West side face (-x direction)
+    glPushMatrix()
+    glTranslate(-4.75, 4.5, 3)
+    glRotated(90, 0, 1, 0)
+    drawPlane(6, 0.5, woodTextureName)
+    glPopMatrix()
+
+    # East side face (+x direction)
+    glPushMatrix()
+    glTranslate(4.75, 4.5, 3)
+    glRotated(90, 0, 1, 0)
+    drawPlane(6, 0.5, woodTextureName)
     glPopMatrix()
 
 def draw_DeskLamp(): 
-     #Draws base of lamp
+    # Base of lamp
     glPushMatrix() 
-    glutSolidCylinder(1,.5,10,10)
+    glutSolidCylinder(1, 0.5, 10, 10)
     glPopMatrix()
-#arm of the lamp
+
+    # Arm of the lamp
     glPushMatrix()
-    glutSolidCylinder(.1,3.05,50,50)
+    glutSolidCylinder(0.1, 3.05, 50, 50)
     glPopMatrix()
-    #Neck of the lamp
+
+    # Neck of the lamp
     glPushMatrix()
-    glTranslate(0,.09,3)
+    glTranslate(0, 0.09, 3)
     glRotated(90, 1, 0, 0)
-    glutSolidCylinder(.1,2.5,50,50)
+    glutSolidCylinder(0.1, 2.5, 50, 50)
     glPopMatrix()
-#light hood
+
+    # Light hood
     glPushMatrix()
-    glTranslate(0,-2.5,2.3)
+    glTranslate(0, -2.5, 2.3)
     glRotated(90, 0, 0, 1)
-    gluCylinder(tube, .5, .5, 1,10,10)
+    gluCylinder(tube, 0.5, 0.5, 1, 10, 10)
     glPopMatrix()
 
     glPushMatrix()
@@ -525,140 +659,60 @@ def draw_DeskLamp():
     glutSolidCylinder(.5,0.01,10,10)
     glPopMatrix()
 
-def draw_table(): 
-    glPushMatrix()
-    glTranslate(-5, 0, 10)   #0, 2, 30
-    glRotated(-90, 1, 0, 0)
-    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
-    gluCylinder(tube, .5, .5, 2,10,10)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslate(0, 0, 10)   #0, 2, 30
-    glRotated(-90, 1, 0, 0)
-    set_copper(GL_FRONT_AND_BACK)   # Make material attributes mimic copper.
-    gluCylinder(tube, .5, .5, 2,10,10)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslate(0, 0, 7)   #0, 2, 30
-    glRotated(-90, 1, 0, 0)
-    set_pewter(GL_FRONT_AND_BACK)    # Make material attributes mimic pewter
-    gluCylinder(tube, .5, .5, 2,10,10)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslate(-5, 0, 7)   #0, 2, 30
-    glRotated(-90, 1, 0, 0)
-    set_pewter(GL_FRONT_AND_BACK)    # Make material attributes mimic pewter
-    gluCylinder(tube, .5, .5, 2,10,10)
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslated(-2,2.3, 8)
-    glScaled(1.5, .15, 1) # Stretch body
-    # glRotated(45, 0, 0, 1) # Drawing body parallel to x-axis
-    glutSolidCube(5) # Body (Bottom)
-    glPopMatrix()
-
 def draw_die():
-    # Draw Die
+    # Constructs a die using 6 planes
+
+    # Face 1
     glPushMatrix()
-    set_PolishedSilver(GL_FRONT_AND_BACK)   # Make material attributes mimic silver.
-    glutSolidCube(1)    
-    glPopMatrix()
-    
-def draw_floor(size, divisions=1, f=None, df=None):
-    """Draws a floor of a given size and type.
-
-    Keyword arguments:
-    size -- Size of the floor (size x size grid, centered at origin)
-    divisions -- Number of divisions (default 1)
-    f -- Function to apply for the "y-height" (default None => y=0)
-    df -- Procedure to set the normal based on function f (default None)
-    
-    A larger number of divisions great improves quality of the floor.
-    If df is None then the normal is set to point directly up.
-    """
-    # Be sure we are talking about correct matrix.
-    glMatrixMode(GL_MODELVIEW)
-    glPushMatrix()
-
-    # Make the floor mimic Pewter material.
-    set_pewter(GL_FRONT_AND_BACK)   
-
-    step = size / divisions
-    if f is None:
-        glNormal3f(0, 1, 0)        # Use a vertical normal.
-        glBegin(GL_QUADS)
-        for i in range(0, divisions):
-            x = -size/2 + i*step
-            for j in range(0, divisions):
-                z = -size/2 + j*step
-                glVertex3f(x,0,z+step)
-                glVertex3f(x+step,0,z+step)
-                glVertex3f(x+step,0,z)
-                glVertex3f(x,0,z)
-        glEnd()
-    elif df is None:
-        glNormal3f(0, 1, 0)        # Use a vertical normal.
-        glBegin(GL_QUADS)
-        for i in range(0, divisions):
-            x = -size/2 + i*step
-            for j in range(0, divisions):
-                z = -size/2 + j*step
-                glVertex3f(x,f(x,z+step),z+step)
-                glVertex3f(x+step,f(x+step,z+step),z+step)
-                glVertex3f(x+step,f(x+step,z),z)
-                glVertex3f(x,f(x,z),z)
-        glEnd()
-    else:
-        for i in range(0, divisions):
-            glBegin(GL_QUAD_STRIP)  # QUAD_STRIPS are more efficient.
-            x = -size/2 + i*step
-            for j in range(0, divisions):
-                z = -size/2 + j*step
-                df(x+step, z)
-                glVertex3f(x+step,f(x+step,z),z)
-                df(x, z)
-                glVertex3f(x,f(x,z),z)
-            df(x+step, size/2)
-            glVertex3f(x+step,f(x+step,size/2),size/2)
-            df(x, size/2)
-            glVertex3f(x,f(x,size/2),size/2)
-            glEnd()
+    glScale(0.1, 0.1, 0.1)
+    glTranslate(0, 0, 0)
+    drawPlane(10, 10, die1TextureName)
     glPopMatrix()
 
-def drawFloor(width, height, texture):
-    """ Draw a textured floor of the specified dimension. """
-    glBindTexture(GL_TEXTURE_2D, texture)
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)          # try GL_DECAL/GL_REPLACE/GL_MODULATE
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)                   # try GL_NICEST/GL_FASTEST
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) # try GL_CLAMP/GL_REPEAT/GL_CLAMP_TO_EDGE
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)    # try GL_LINEAR/GL_NEAREST
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    # Face 2
+    glPushMatrix()
+    glScale(0.1, 0.1, 0.1)
+    glRotated(90, 1, 0, 0)
+    glTranslate(0, 0, 0)
+    drawPlane(10, 10, die2TextureName)
+    glPopMatrix()
 
-    sx = width/2
-    ex = -sx
-    sz = height/2
-    ez = -sz
-    
-    # Enable/Disable each time or OpenGL ALWAYS expects texturing!
-    glEnable(GL_TEXTURE_2D)
+    # Face 3
+    glPushMatrix()
+    glScale(0.1, 0.1, 0.1)
+    glTranslate(0, 0, 10)
+    drawPlane(10, 10, die3TextureName)
+    glPopMatrix()
 
-    glBegin(GL_QUADS)
-    glTexCoord2f(0, 0)
-    glVertex3f(sx, 0, sz)
-    glTexCoord2f(0, 1)
-    glVertex3f(sx, 0, ez)
-    glTexCoord2f(1, 1)
-    glVertex3f(ex, 0, ez)
-    glTexCoord2f(1, 0)
-    glVertex3f(ex, 0, sz)
-    glEnd()
+    # Face 4
+    glPushMatrix()
+    glScale(0.1, 0.1, 0.1)
+    glRotated(90, 1, 0, 0)
+    glTranslate(0, 0, -10)
+    drawPlane(10, 10, die4TextureName)
+    glPopMatrix()
 
-    glDisable(GL_TEXTURE_2D)
+    # Face 5
+    glPushMatrix()
+    glScale(0.1, 0.1, 0.1)
+    glRotated(90, 0, 1, 0)
+    glTranslate(-5, 0, 5)
+    drawPlane(10, 10, die5TextureName)
+    glPopMatrix()
+
+    # Face 6
+    glPushMatrix()
+    glScale(0.1, 0.1, 0.1)
+    glRotated(90, 0, 1, 0)
+    glTranslate(-5, 0, -5)
+    drawPlane(10, 10, die6TextureName)
+    glPopMatrix()
+
+def draw_Textured_Picture():
+    # Draw Textured Picture
+    glPushMatrix()
+    drawPlane(10, 8, secretPictureTextureName)
+    glPopMatrix()
 
 def place_main_light():
     """Set up the main light."""
@@ -900,11 +954,11 @@ def place_FlashLight():
     ly = camera.eye.y
     lz = camera.eye.z
     light_position = [ lx, ly, lz, 1.0 ]
-    # White lighting 
+    # White lighting
     light_ambient = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
     light_diffuse = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
     light_specular = [ 1 * flashBrightness, 1 * flashBrightness, 1 * flashBrightness, 1.0 ]
-    light_direction = [ 0.0, -1.0, 2.0, 0.0 ]  # Light points down
+    light_direction = [ 0.0, -1.0, -5.0, 0.0 ]  # Light points down
     # TODO: Make flashlight turn with camera (yaw)
 
     # For Light 0, set position, ambient, diffuse, and specular values
@@ -922,7 +976,7 @@ def place_FlashLight():
     # Create a spotlight effect
     if is_flash_spotlight_on:
         glLightf(GL_LIGHT5, GL_SPOT_CUTOFF,30.0)
-        glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 4.0)
+        glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 1.0)
         glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, light_direction)
     else:
         glLightf(GL_LIGHT5, GL_SPOT_CUTOFF,0)
@@ -970,6 +1024,140 @@ def drawPlane(width, height, texture):
    
     glDisable(GL_TEXTURE_2D)
 
+def generateCheckerBoardTexture():
+    """
+    * Generate a texture in the form of a checkerboard
+    * Why?  Simple to do...
+    """
+    global checkerBoardName
+    texture = [0]*(NROWS*NCOLS*4)
+    for i in range(NROWS):
+        for j in range(NCOLS):
+            c = 0 if ((i&8)^(j&8)) else 255
+            idx = (i*NCOLS+j)*4
+            # Black/White Checkerboard
+            texture[idx] = c     # Red
+            texture[idx+1] = c   # Green
+            texture[idx+2] = c   # Blue
+            texture[idx+3] = 180 # Alpha (transparency)
+
+    # Generate a "name" for the texture.  
+    # Bind this texture as current active texture
+    # and sets the parameters for this texture.
+    checkerBoardName = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, checkerBoardName)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, NCOLS, NROWS, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, texture)
+
+def loadImageTexture(filename):
+    # Load the image from the file and return as a texture
+    im = Image.open(filename)
+    # print("Image dimensions: {0}".format(im.size))  # If you want to see the image's original dimensions
+    # dim = 128
+    # size = (0,0,dim,dim)
+    # texture = im.crop(size).tobytes("raw")   # The cropped texture
+    texture = im.tobytes("raw")   # The cropped texture
+    dimX = im.size[0]
+    dimY = im.size[1]
+    
+    returnTextureName = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, returnTextureName)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dimX, dimY, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, texture)
+    return returnTextureName
+
+# def draw_floor(size, divisions=1, f=None, df=None):
+#     """Draws a floor of a given size and type.
+
+#     Keyword arguments:
+#     size -- Size of the floor (size x size grid, centered at origin)
+#     divisions -- Number of divisions (default 1)
+#     f -- Function to apply for the "y-height" (default None => y=0)
+#     df -- Procedure to set the normal based on function f (default None)
+    
+#     A larger number of divisions great improves quality of the floor.
+#     If df is None then the normal is set to point directly up.
+#     """
+#     # Be sure we are talking about correct matrix.
+#     glMatrixMode(GL_MODELVIEW)
+#     glPushMatrix()
+
+#     # Make the floor mimic Pewter material.
+#     set_pewter(GL_FRONT_AND_BACK)   
+
+#     step = size / divisions
+#     if f is None:
+#         glNormal3f(0, 1, 0)        # Use a vertical normal.
+#         glBegin(GL_QUADS)
+#         for i in range(0, divisions):
+#             x = -size/2 + i*step
+#             for j in range(0, divisions):
+#                 z = -size/2 + j*step
+#                 glVertex3f(x,0,z+step)
+#                 glVertex3f(x+step,0,z+step)
+#                 glVertex3f(x+step,0,z)
+#                 glVertex3f(x,0,z)
+#         glEnd()
+#     elif df is None:
+#         glNormal3f(0, 1, 0)        # Use a vertical normal.
+#         glBegin(GL_QUADS)
+#         for i in range(0, divisions):
+#             x = -size/2 + i*step
+#             for j in range(0, divisions):
+#                 z = -size/2 + j*step
+#                 glVertex3f(x,f(x,z+step),z+step)
+#                 glVertex3f(x+step,f(x+step,z+step),z+step)
+#                 glVertex3f(x+step,f(x+step,z),z)
+#                 glVertex3f(x,f(x,z),z)
+#         glEnd()
+#     else:
+#         for i in range(0, divisions):
+#             glBegin(GL_QUAD_STRIP)  # QUAD_STRIPS are more efficient.
+#             x = -size/2 + i*step
+#             for j in range(0, divisions):
+#                 z = -size/2 + j*step
+#                 df(x+step, z)
+#                 glVertex3f(x+step,f(x+step,z),z)
+#                 df(x, z)
+#                 glVertex3f(x,f(x,z),z)
+#             df(x+step, size/2)
+#             glVertex3f(x+step,f(x+step,size/2),size/2)
+#             df(x, size/2)
+#             glVertex3f(x,f(x,size/2),size/2)
+#             glEnd()
+#     glPopMatrix()
+
+# def drawFloor(width, height, texture):
+#     """ Draw a textured floor of the specified dimension. """
+#     glBindTexture(GL_TEXTURE_2D, texture)
+#     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)          # try GL_DECAL/GL_REPLACE/GL_MODULATE
+#     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)                   # try GL_NICEST/GL_FASTEST
+#     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE) # try GL_CLAMP/GL_REPEAT/GL_CLAMP_TO_EDGE
+#     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+#     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)    # try GL_LINEAR/GL_NEAREST
+#     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+
+#     sx = width/2
+#     ex = -sx
+#     sz = height/2
+#     ez = -sz
+    
+#     # Enable/Disable each time or OpenGL ALWAYS expects texturing!
+#     glEnable(GL_TEXTURE_2D)
+
+#     glBegin(GL_QUADS)
+#     glTexCoord2f(0, 0)
+#     glVertex3f(sx, 0, sz)
+#     glTexCoord2f(0, 1)
+#     glVertex3f(sx, 0, ez)
+#     glTexCoord2f(1, 1)
+#     glVertex3f(ex, 0, ez)
+#     glTexCoord2f(1, 0)
+#     glVertex3f(ex, 0, sz)
+#     glEnd()
+
+#     glDisable(GL_TEXTURE_2D)
+
 def set_copper(face):
     """Set the material properties of the given face to "copper"-esque.
 
@@ -1015,46 +1203,5 @@ def set_PolishedSilver(face):
     glMaterialfv(face, GL_SPECULAR, specular);
     glMaterialf(face, GL_SHININESS, shininess);
 
-def generateCheckerBoardTexture():
-    """
-    * Generate a texture in the form of a checkerboard
-    * Why?  Simple to do...
-    """
-    global checkerBoardName
-    texture = [0]*(NROWS*NCOLS*4)
-    for i in range(NROWS):
-        for j in range(NCOLS):
-            c = 0 if ((i&8)^(j&8)) else 255
-            idx = (i*NCOLS+j)*4
-            # Black/White Checkerboard
-            texture[idx] = c     # Red
-            texture[idx+1] = c   # Green
-            texture[idx+2] = c   # Blue
-            texture[idx+3] = 180 # Alpha (transparency)
-
-    # Generate a "name" for the texture.  
-    # Bind this texture as current active texture
-    # and sets the parameters for this texture.
-    checkerBoardName = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, checkerBoardName)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, NCOLS, NROWS, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, texture)
-
-def loadImageTexture(filename):
-    # Load the image from the file and return as a texture
-    im = Image.open(filename)
-    # print("Image dimensions: {0}".format(im.size))  # If you want to see the image's original dimensions
-    # dim = 128
-    # size = (0,0,dim,dim)
-    # texture = im.crop(size).tobytes("raw")   # The cropped texture
-    texture = im.tobytes("raw")   # The cropped texture
-    dimX = im.size[0]
-    dimY = im.size[1]
-    
-    returnTextureName = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, returnTextureName)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dimX, dimY, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, texture)
-    return returnTextureName
 
 if __name__ == '__main__': main()
