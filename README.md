@@ -16,6 +16,8 @@ NOTES (IMPORTANT!!!):
 - For Mac, on line 154. multiply win_width and win_height by 2 in order to display scene correctly.
 
 HOW TO INTERACT WITH THE SCENE:
+'h' = Display help message (in console)
+
 Camera Movement Controls:
 'w' = Move forward
 's' = Move backward

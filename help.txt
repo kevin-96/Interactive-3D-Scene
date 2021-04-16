@@ -1,5 +1,7 @@
 Welcome to this interactive scene! Use the following keys to interact with the scene:
 
+'h' = Display help message (in console)
+
 Camera:
 'w' = Move forward
 's' = Move backward
