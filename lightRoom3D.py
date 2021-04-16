@@ -774,7 +774,7 @@ def place_DeskLight():
     light_ambient = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
     light_diffuse = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
     light_specular = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
-    light_direction = [ 0.0, -1.0, 0.0, 0.0 ]  # Light points down
+    light_direction = [ 0.0, -2.0, 0.0, 0.0 ]  # Light points down
 
     # For this light, set position, ambient, diffuse, and specular values
     glLightfv(activeLight, GL_POSITION, light_position)
@@ -790,8 +790,8 @@ def place_DeskLight():
 
     # Create a spotlight effect
     if is_desk_spotlight_on:
-        glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, 45.0)
-        glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 1.0)
+        glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, 70.0)
+        glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 0.0)
         glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, light_direction)
     else:
         glLightf(GL_LIGHT4, GL_SPOT_CUTOFF,0)
