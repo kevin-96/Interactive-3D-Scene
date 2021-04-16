@@ -151,7 +151,7 @@ def init():
 def display():
     """Display the current scene."""
     # Set the viewport to the full screen.
-    glViewport(0, 0, 2*win_width, 2*win_height) # MAC USERS: Scale width and height by 2
+    glViewport(0, 0, win_width, win_height) # MAC USERS: Scale width and height by 2
 
     camera.setProjection()
     
@@ -500,12 +500,12 @@ def draw_objects():
     draw_table()
     glPopMatrix()
 
-    # # Draw Desk Lamp (Doesn't display on Mac computer, but works on Windows)
-    # glPushMatrix()
-    # glRotated(-90, 1, 0, 0)
-    # glTranslate(-3.4,-1,3.8)  # for some reason the y coordinate is where the z should be
-    # draw_DeskLamp()
-    # glPopMatrix()
+    # Draw Desk Lamp (Doesn't display on Mac computer, but works on Windows)
+    glPushMatrix()
+    glRotated(-90, 1, 0, 0)
+    glTranslate(-2.8, -1, 2.5)  # for some reason the y coordinate is where the z should be
+    draw_DeskLamp()
+    glPopMatrix()
 
     # Draw Copper Ball
     glPushMatrix()
@@ -766,9 +766,9 @@ def place_DeskLight():
     """Set up the desk light (lamp)."""
     activeLight = GL_LIGHT4
     glMatrixMode(GL_MODELVIEW)
-    lx = -3.3
-    ly = 1.7
-    lz = 3.6
+    lx = -2.8
+    ly = 0
+    lz = 3.4
     light_position = [ lx, ly, lz, 0.5 ]
     # White light
     light_ambient = [ 1 * deskBrightness, 1 * deskBrightness, 1 * deskBrightness, 1.0 ]
