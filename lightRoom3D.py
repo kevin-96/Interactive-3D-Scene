@@ -151,7 +151,7 @@ def init():
 def display():
     """Display the current scene."""
     # Set the viewport to the full screen.
-    glViewport(0, 0, win_width, win_height) # MAC USERS: Scale width and height by 2
+    glViewport(0, 0, 2*win_width, 2*win_height) # MAC USERS: Scale width and height by 2
 
     camera.setProjection()
     
@@ -500,12 +500,12 @@ def draw_objects():
     draw_table()
     glPopMatrix()
 
-    # Draw Desk Lamp (Doesn't display on Mac computer, but works on Windows)
-    glPushMatrix()
-    glRotated(-90, 1, 0, 0)
-    glTranslate(-2.8, -1, 2.5)  # for some reason the y coordinate is where the z should be
-    draw_DeskLamp()
-    glPopMatrix()
+    # # Draw Desk Lamp (Doesn't display on Mac computer, but works on Windows)
+    # glPushMatrix()
+    # glRotated(-90, 1, 0, 0)
+    # glTranslate(-2.8, -1, 2.5)  # for some reason the y coordinate is where the z should be
+    # draw_DeskLamp()
+    # glPopMatrix()
 
     # Draw Copper Ball
     glPushMatrix()

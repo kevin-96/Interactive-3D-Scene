@@ -3,19 +3,21 @@
 TEAM MEMBERS:
 Phillip Nam, Kevin Sangurima, Ryan Clark
 
-HOW TO RUN THE PROGRAM:
 
+HOW TO RUN THE PROGRAM:
 1. Unzip the project file ("Interactive3DScene.zip")
 2. Using a terminal, navigate to the folder that was unzipped
 3. In that folder, run the following command "python3 lightRoom3D.py" (Make sure Python is installed on your machine! Also, import OpenGL and PIL libraries)
 
-NOTES (IMPORTANT!!!):
 
+NOTES (IMPORTANT!!!):
 - Camera flashlight can be toggled on/off and it moves up, down, left, and right. Unfortunately, at the moment it doesn't turn with the camera's horizontal look angle (yaw). It points in the -z direction only.
 - (IMPORTANT) The lamp doesn't load on Mac (not sure if its due to Mac or FreeGlut version), but the lamp loads on Windows. For Mac, if you uncomment the lamp being drawn in "draw_objects" method, scene will load.
 - For Mac, on line 154. multiply win_width and win_height by 2 in order to display scene correctly.
 
+
 HOW TO INTERACT WITH THE SCENE:
+
 'h' = Display help message (in console)
 
 Camera Movement Controls:
